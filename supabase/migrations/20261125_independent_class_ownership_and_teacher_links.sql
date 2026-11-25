@@ -46,6 +46,11 @@ ALTER TABLE astroexam.profiles
   ADD CONSTRAINT profiles_created_by_fkey
   FOREIGN KEY (created_by) REFERENCES astroexam.profiles(id) ON DELETE SET NULL;
 
+ALTER TABLE astroexam.profiles DROP CONSTRAINT IF EXISTS profiles_created_by_fkey;
+ALTER TABLE astroexam.profiles
+  ADD CONSTRAINT profiles_created_by_fkey
+  FOREIGN KEY (created_by) REFERENCES astroexam.profiles(id) ON DELETE SET NULL;
+
 INSERT INTO astroexam.teacher_classes(teacher_id,class_id)
 SELECT teacher_id,id FROM astroexam.classes WHERE teacher_id IS NOT NULL
 ON CONFLICT DO NOTHING;
