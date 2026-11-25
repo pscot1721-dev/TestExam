@@ -68,8 +68,17 @@ main{max-width:1200px;margin:0 auto;padding:32px 24px 80px}
 .grid.grid-cards{grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr))}
 /* School directory: five compact columns with left-to-right numeric ordering. */
 .school-class-grid{gap:14px!important}
-.school-class-grid .choice{min-width:0;margin:0;padding:12px 14px;min-height:78px}
-.school-class-grid .choice span{min-width:0;overflow-wrap:anywhere}
+.school-class-grid{grid-auto-rows:112px;align-items:stretch}
+.school-class-grid .choice{box-sizing:border-box;width:100%;height:112px;min-width:0;min-height:112px;margin:0;padding:16px 18px;display:flex;align-items:center;gap:12px;border:1px solid var(--line-2);border-radius:14px;background:#fff;box-shadow:0 2px 8px rgba(25,45,75,.035)}
+.school-class-grid .choice:hover{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 4px 14px rgba(40,90,140,.08)}
+.school-class-grid .choice span{display:block;flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.45}
+.school-class-grid .choice span strong{display:block;margin-bottom:5px;font-size:15px;color:var(--ink)}
+.school-class-grid .choice span small{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.45;color:var(--muted);font-size:12.5px}
+#school-student-retrieve-form>button[type=submit]{min-width:250px;min-height:48px;margin-top:20px;padding:12px 22px}
+.report-filter-actions{align-items:center}
+.report-filter-actions button{min-width:230px;min-height:48px;display:inline-flex;align-items:center;justify-content:center}
+#cumulative-report-filter select,#cumulative-report-filter .report-exam-dropdown{min-height:52px}
+@media(max-width:620px){.school-class-grid{grid-auto-rows:104px}.school-class-grid .choice{height:104px;min-height:104px;padding:12px}#school-student-retrieve-form>button[type=submit]{width:100%}.report-filter-actions button{width:100%}}
 @media(max-width:1100px){.school-class-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
 @media(max-width:850px){.school-class-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:620px){.school-class-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
