@@ -58,6 +58,21 @@ create trigger ae_student_advisor_link
 before insert or update of advisor_name,school on astroexam.profiles
 for each row execute function astroexam.set_student_advisor_link();
 
+-- Make the manual advisor field truly editable, including clearing it.
+do $edit_student$
+declare fn text;
+begin
+ select pg_get_functiondef('astroexam.api_action(text,jsonb,uuid,text)'::regprocedure) into fn;
+ if position('advisor_name=coalesce(nullif(trim(p_data->>''advisor_name''),''''),advisor_name,'''')' in fn)>0 then
+  fn:=replace(fn,
+   'advisor_name=coalesce(nullif(trim(p_data->>''advisor_name''),''''),advisor_name,'''')',
+   'advisor_name=case when p_data ? ''advisor_name'' then coalesce(trim(p_data->>''advisor_name''),'''') else advisor_name end'
+  );
+  execute fn;
+ end if;
+end
+$edit_student$;
+
 -- Backfill only unique exact name + school matches; retain all original advisor text.
 update astroexam.profiles s
 set advisor_teacher_id=astroexam.match_advisor_teacher(s.advisor_name,s.school)
