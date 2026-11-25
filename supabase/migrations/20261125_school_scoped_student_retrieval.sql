@@ -13,7 +13,7 @@ declare
   fn text;
   original text;
   injection text := $code$
-  elsif p_action='students' and p_data->>'mode'='school-classes' then
+  if p_action='students' and p_data->>'mode'='school-classes' then
    if nullif(trim(coalesce(who.organization,'')),'') is null then
     raise exception 'กรุณากำหนดโรงเรียนในโปรไฟล์ครูก่อน';
    end if;
