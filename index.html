@@ -1392,7 +1392,6 @@ async function renderSchoolStudents(classIds){
  const result=await api('students',{mode:'school-retrieve',class_ids:classIds});
  const box=document.querySelector('#school-student-results');if(!box)return;
  box.innerHTML=`<div class="card"><h2>ดึงข้อมูลนักเรียนสำเร็จ</h2><p>โรงเรียน: ${esc(result.school||profile.organization||'-')}</p><p>นักเรียนในห้องที่เลือก: <strong>${Number(result.selected_students||0).toLocaleString('th-TH')} คน</strong></p><p>เชื่อมโยงเข้าบัญชีครูแล้ว: <strong>${Number(result.linked_or_active||0).toLocaleString('th-TH')} คน</strong></p><p class="muted">ระบบนำข้อมูลนักเรียนจากฐานข้อมูลเข้าสู่รายการนักเรียนในความดูแลของคุณแล้ว โดยไม่สร้างบัญชีใหม่และไม่แสดงรายชื่อนักเรียน</p></div>`;
- await teacherHome('students');
  toast(`ดึงข้อมูลนักเรียน ${Number(result.linked_or_active||0).toLocaleString('th-TH')} คนเรียบร้อยแล้ว`);
 }
 async function extraSubmit(f,d){const id=f.getAttribute('id');
