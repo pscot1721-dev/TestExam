@@ -66,6 +66,14 @@ main{max-width:1200px;margin:0 auto;padding:32px 24px 80px}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-bottom:18px}
 .grid>*{margin-top:0;margin-bottom:0}
 .grid.grid-cards{grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr))}
+/* School directory: five compact columns with left-to-right numeric ordering. */
+.school-class-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:14px!important}
+.school-class-grid .choice{min-width:0;margin:0;padding:12px 14px;min-height:78px}
+.school-class-grid .choice span{min-width:0;overflow-wrap:anywhere}
+@media(max-width:1100px){.school-class-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(max-width:850px){.school-class-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:620px){.school-class-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:420px){.school-class-grid{grid-template-columns:1fr!important}}
 main,.card,.grid>*,header>div{min-width:0}
 .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
 .page-head h1{margin:10px 0 0}
@@ -1401,10 +1409,10 @@ async function exportCumulativeReportExcel(classId=null,examIds=null){
 }
 async function schoolStudentDirectory(){
  const directory=await api('students',{mode:'school-classes'}),rooms=Array.isArray(directory)?directory:[];
- // Sort classroom names numerically by grade, then room (e.g. ม.1/1 ... ม.1/10, then ม.2/1).
- const classOrder=name=>{const m=String(name||'').trim().match(/^ม\.?\s*(\d+)\s*\/\s*(\d+)$/i);return m?[Number(m[1]),Number(m[2])]:[Number.MAX_SAFE_INTEGER,String(name||'').toLocaleLowerCase('th-TH')];};
- rooms.sort((a,b)=>{const x=classOrder(a.name),y=classOrder(b.name);return x[0]-y[0]||(typeof x[1]==='number'&&typeof y[1]==='number'?x[1]-y[1]:String(x[1]).localeCompare(String(y[1]),'th-TH'));});
- app.innerHTML=`<button class="secondary" data-action="students">ย้อนกลับ</button><div class="card" style="margin-top:18px"><h1>ตรวจสอบข้อมูลนักเรียนกับฐานข้อมูล</h1><p class="muted">โรงเรียน: ${esc(profile.organization||'-')} · เลือกห้องเรียนที่ต้องการ ระบบจะดึงนักเรียนทั้งหมดจากห้องที่เลือกเข้าบัญชีครูของคุณทันที</p><form id="school-student-retrieve-form"><div class="grid grid-cards">${rooms.map(r=>`<label class="choice"><input type="checkbox" name="class_ids" value="${esc(r.id)}"><span><strong>${esc(r.name)}</strong><br><small>${Number(r.student_count||0).toLocaleString('th-TH')} คน · ครูที่ปรึกษา: ${esc(r.advisor_name||'-')}</small></span></label>`).join('')||'<p class="muted">ไม่พบห้องเรียน หรือยังไม่ได้ระบุโรงเรียนในโปรไฟล์</p>'}</div><button type="submit" ${rooms.length?'':'disabled'}>ตรวจสอบและดึงข้อมูลนักเรียน</button></form></div><div id="school-student-results"></div>`;
+ // Natural numeric order by grade then room: ม.1/1, ม.1/2 ... ม.1/10, ม.2/1.
+ const classOrder=name=>{const m=String(name||'').trim().match(/^ม\.?\s*(\d+)\s*\/\s*(\d+)$/);return m?[0,Number(m[1]),Number(m[2])]:[1,String(name||'').toLocaleLowerCase('th-TH'),0];};
+ rooms.sort((a,b)=>{const x=classOrder(a.name),y=classOrder(b.name);if(x[0]!==y[0])return x[0]-y[0];if(x[0]===0)return x[1]-y[1]||x[2]-y[2];return String(x[1]).localeCompare(String(y[1]),'th-TH');});
+ app.innerHTML=`<button class="secondary" data-action="students">ย้อนกลับ</button><div class="card" style="margin-top:18px"><h1>ตรวจสอบข้อมูลนักเรียนกับฐานข้อมูล</h1><p class="muted">โรงเรียน: ${esc(profile.organization||'-')} · เลือกห้องเรียนที่ต้องการ ระบบจะดึงนักเรียนทั้งหมดจากห้องที่เลือกเข้าบัญชีครูของคุณทันที</p><form id="school-student-retrieve-form"><div class="grid grid-cards school-class-grid">${rooms.map(r=>`<label class="choice"><input type="checkbox" name="class_ids" value="${esc(r.id)}"><span><strong>${esc(r.name)}</strong><br><small>${Number(r.student_count||0).toLocaleString('th-TH')} คน · ครูที่ปรึกษา: ${esc(r.advisor_name||'-')}</small></span></label>`).join('')||'<p class="muted">ไม่พบห้องเรียน หรือยังไม่ได้ระบุโรงเรียนในโปรไฟล์</p>'}</div><button type="submit" ${rooms.length?'':'disabled'}>ตรวจสอบและดึงข้อมูลนักเรียน</button></form></div><div id="school-student-results"></div>`;
 }
 async function renderSchoolStudents(classIds){
  const result=await api('students',{mode:'school-retrieve',class_ids:classIds});
