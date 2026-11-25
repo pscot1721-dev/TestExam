@@ -23,7 +23,7 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  SELECT min(t.id), count(*) INTO candidate, matches
+  SELECT (array_agg(t.id ORDER BY t.id))[1], count(*) INTO candidate, matches
   FROM profiles t
   WHERE t.role='teacher' AND t.active
     AND lower(trim(t.name))=lower(trim(NEW.advisor_name))
@@ -290,7 +290,7 @@ BEGIN
     INSERT INTO login_limits AS l(key) VALUES(bucket)
     ON CONFLICT(key) DO UPDATE
       SET hits=CASE WHEN l.window_start<now()-interval '15 minutes' THEN 1 ELSE l.hits+1 END,
-          window_start=CASE WHEN l.window_start<now()-interval '15 minutes' THEN now() ELSE l.hits+1 END
+          window_start=CASE WHEN l.window_start<now()-interval '15 minutes' THEN now() ELSE l.window_start END
     RETURNING hits INTO n;
     IF n>5 THEN RETURN jsonb_build_object('error','ลองเข้าสู่ระบบเกินกำหนด กรุณารอ 15 นาที'); END IF;
     SELECT * INTO who FROM profiles
