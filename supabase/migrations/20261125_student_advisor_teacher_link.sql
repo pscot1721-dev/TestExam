@@ -22,7 +22,7 @@ begin
   return null;
  end if;
 
- select min(t.id) into matched_id
+ select (array_agg(t.id))[1] into matched_id
  from profiles t
  where t.role='teacher'
    and t.active
@@ -86,12 +86,7 @@ begin
   fn:=replace(fn,'''advisor_teacher_id'',tp.id','''advisor_teacher_id'',p.advisor_teacher_id');
  end if;
 
- if position('''advisor_name'',coalesce(nullif(trim(tp.name),''''),nullif(trim(p.advisor_name),''''),'''' )' in fn)=0 then
-  fn:=replace(fn,
-   '''advisor_name'',coalesce(nullif(trim(tp.name),''''),nullif(trim(p.advisor_name),''''),''''),',
-   '''advisor_name'',coalesce(nullif(trim(tp.name),''''),nullif(trim(p.advisor_name),''''),''''),'
-  );
- end if;
+
 
  execute fn;
 end
