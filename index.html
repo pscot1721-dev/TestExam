@@ -513,7 +513,7 @@ async function teacherToken(){
  }return teacher.access_token;
 }
 async function api(action,data={},keepalive=false){data={...data,client_version:2};
- const management=['staff-login','student-login','students','student-save','student-pin','student-password','student-delete','student-delete-direct','students-import','student-check-by-code','student-link-by-code','student-link-room-by-code','student-remove-from-teacher','student-directory-schools','student-directory-classes','student-directory-import-rooms','teacher-public','classes','class-save','class-get','class-members','class-move','class-delete','admin-overview','admin-teachers','admin-create','admin-save','admin-password','admin-delete','admin-delete'].includes(action);
+ const management=['staff-login','student-login','students','student-save','student-pin','student-password','student-delete','student-delete-direct','students-import','student-check-by-code','student-link-by-code','student-link-room-by-code','student-remove-from-teacher','teacher-public','classes','class-save','class-get','class-members','class-move','class-delete','admin-overview','admin-teachers','admin-create','admin-save','admin-password','admin-delete','admin-delete'].includes(action);
  const headers={'Content-Type':'application/json',apikey:key};
  if(student)headers['x-student-token']=student.token;
  else if(teacher?.token)headers['x-staff-token']=teacher.token;
@@ -1043,11 +1043,11 @@ async function studentHome(){
  // Use the teacher_id attached to the student's active class first.
  // A generic profile.teacher_id may refer to another relationship and must not override the class advisor.
  const advisorId=String(
-  studentRoomInfo.teacher_id||
   profile.advisor_teacher_id||
   profile.homeroom_teacher_id||
+  studentRoomInfo.advisor_teacher_id||
   profile.teacher_profile_id||
-  idOf(profile)||
+  studentRoomInfo.teacher_id||
   ''
  );
  const advisorInfo=teacherInfo[advisorId]||{};
@@ -1061,11 +1061,11 @@ async function studentHome(){
  // The class record returned by the student "me" action contains the live class-teacher name.
  // Prefer it over any cached profile snapshot or a secondary public lookup.
  const studentAdvisor=firstValue(
-  studentRoomInfo.teacher_name,studentRoomInfo.advisor_name,
-  studentRoomInfo.advisor,studentRoomInfo.homeroom_teacher_name,
   advisorInfo.name,advisorInfo.full_name,advisorInfo.display_name,
   profile.advisor_name,profile.advisor,profile.teacher_name,
-  profile.homeroom_teacher_name,'-'
+  profile.homeroom_teacher_name,
+  studentRoomInfo.advisor_name,studentRoomInfo.advisor,
+  studentRoomInfo.homeroom_teacher_name,studentRoomInfo.teacher_name,'-'
  );
  app.innerHTML=`<div class="hero student-welcome"><h1 style="margin-top:12px">ยินดีต้อนรับ ${esc(profile.name||'')}</h1><p class="muted">เลขที่ ${esc(studentRoomInfo.student_number||profile.student_number||'-')} · ห้อง ${esc(studentRoomInfo.name||'ยังไม่มีห้องเรียน')} · ${esc(studentSchool)}<br>ครูที่ปรึกษา: ${esc(studentAdvisor)}</p></div><h2>ข้อสอบที่ได้รับมอบหมาย</h2><div class="grid grid-cards">${assigned.map(e=>{const closed=new Date(e.server_now)>=new Date(e.closes_at);const notOpen=new Date(e.server_now)<new Date(e.opens_at);const hasAttempt=!!e.attempt_id;const retakesLeft=Number(e.retakes_left??0);const canStart=(!hasAttempt&&!notOpen&&!closed&&e.state!=='closed')||(hasAttempt&&e.can_retake);const action=hasAttempt&&!e.can_retake?'resume':'start-assigned';const btn=hasAttempt?(e.can_retake?`ทำซ้ำ${retakesLeft?` (เหลือ ${retakesLeft} ครั้ง)`:''}`:'เปิดข้อสอบ / ดูผล'):'เริ่มสอบ';const note=hasAttempt&&e.allow_retake&&!e.can_retake?(closed?'หมดเวลารับคำตอบแล้ว':retakesLeft<=0?'ทำครบจำนวนครั้งที่กำหนดแล้ว':'ยังทำซ้ำไม่ได้') : '';const teacherId=String(idOf(e)||'');const teacher=teacherInfo[teacherId]||{};const teacherName=firstValue(e.teacher_name,e.teacher?.name,teacher.name,teacher.full_name,teacher.display_name,'');return `<section class="card exam-card"><span class="pill ${e.attempt_status==='submitted'&&!e.can_retake?'':notOpen?'warn':closed?'mute':'ok'}">${e.attempt_status==='submitted'&&!e.can_retake?'ส่งแล้ว':notOpen?'รอเวลาปล่อย':closed?'หมดเวลารับคำตอบ':'เปิดสอบ'}</span><h2>${esc(e.title)}</h2><div class="exam-meta"><div class="exam-meta-row"><span class="exam-meta-label">วิชา</span><span class="exam-meta-value">${esc(e.subject||e.subject_name||'-')}</span></div><div class="exam-meta-row"><span class="exam-meta-label">รหัสวิชา</span><span class="exam-meta-value">${esc(e.course||e.course_code||'-')}</span></div><div class="exam-meta-row"><span class="exam-meta-label">ครูผู้สอน</span><span class="exam-meta-value">${esc(teacherName||'ไม่พบข้อมูลครู')}</span></div><div class="exam-meta-row"><span class="exam-meta-label">เปิดให้เริ่มสอบ</span><span class="exam-meta-value">${examDateTime(e.opens_at)}</span></div><div class="exam-meta-row"><span class="exam-meta-label">ปิดรับคำตอบ</span><span class="exam-meta-value">${examDateTime(e.closes_at)}</span></div><div class="exam-meta-row"><span class="exam-meta-label">เวลาทำข้อสอบ</span><span class="exam-meta-value">${Number(e.duration_minutes)||'-'} นาที</span></div><div class="exam-meta-row"><span class="exam-meta-label">คะแนนเต็ม</span><span class="exam-meta-value">${Number(e.total_score)||0} คะแนน</span></div><div class="exam-meta-row"><span class="exam-meta-label">ย้อนกลับข้อก่อนหน้า</span><span class="exam-meta-value">${e.allow_back===false?'ไม่อนุญาต':'อนุญาต'}</span></div><div class="exam-meta-row"><span class="exam-meta-label">การทำซ้ำ</span><span class="exam-meta-value">${e.allow_retake?'ได้ '+Number(e.retake_limit||1)+' ครั้ง':'ไม่อนุญาต'}</span></div>${note?`<div class="exam-meta-row"><span class="exam-meta-label">หมายเหตุ</span><span class="exam-meta-value warn">${note}</span></div>`:''}</div><div class="pre-exam-instructions"><details><summary>อ่านคำชี้แจงก่อนสอบ</summary><p class="pre">${esc(e.instructions||'ไม่มีคำชี้แจงเพิ่มเติม')}</p></details></div><button data-action="${action}" data-id="${hasAttempt&&!e.can_retake?e.attempt_id:e.id}" ${canStart||hasAttempt&&!e.can_retake?'':'disabled'}>${btn}</button></section>`}).join('')||'<div class="card empty">ยังไม่มีข้อสอบที่ได้รับมอบหมาย</div>'}</div><h2 style="margin-top:24px">ประวัติการสอบ</h2>${list.map(a=>`<div class="card row between"><div><h3>${esc(a.title)}</h3><small>${a.status==='submitted'?a.result_visible?'คะแนน '+a.score+' / '+a.total_score:'ส่งแล้ว · รอประกาศคะแนน':'กำลังทำ · หมดเวลา '+date(a.deadline)}</small></div><button class="secondary" data-action="resume" data-id="${a.id}">${a.status==='submitted'?'ดูผล':'ทำต่อ'}</button></div>`).join('')||'<div class="card empty">ยังไม่มีประวัติการสอบ</div>'}`;
 }
