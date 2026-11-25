@@ -7,6 +7,8 @@
 -- This migration records the final function definitions installed in production.
 
 ALTER TABLE astroexam.teacher_classes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS teacher_classes_deny_direct_access ON astroexam.teacher_classes;
+CREATE POLICY teacher_classes_deny_direct_access ON astroexam.teacher_classes FOR ALL TO PUBLIC USING (false) WITH CHECK (false);
 
 CREATE OR REPLACE FUNCTION astroexam.cleanup_student_after_teacher_unlink()
 RETURNS trigger
