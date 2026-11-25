@@ -1384,15 +1384,16 @@ async function exportCumulativeReportExcel(classId=null,examIds=null){
  XLSX.utils.book_append_sheet(wb,ws,'ผลคะแนนนักเรียน');
  XLSX.writeFile(wb,`ผลคะแนนนักเรียน_${safeFile(room)}.xlsx`);
 }
-async function schoolStudentDirectory(selectedIds=[]){
+async function schoolStudentDirectory(){
  const directory=await api('students',{mode:'school-classes'}),rooms=Array.isArray(directory)?directory:[];
- const chosen=new Set(selectedIds);
- app.innerHTML=`<button class="secondary" data-action="students">ย้อนกลับ</button><div class="card" style="margin-top:18px"><h1>เรียกดูนักเรียนภายในโรงเรียน</h1><p class="muted">โรงเรียน: ${esc(profile.organization||'-')} · เลือกได้หลายห้องเรียน โดยจำกัดตามโรงเรียนของบัญชีครู</p><form id="school-student-retrieve-form"><div class="grid grid-cards">${rooms.map(r=>`<label class="choice"><input type="checkbox" name="class_ids" value="${esc(r.id)}" ${chosen.has(r.id)?'checked':''}><span><strong>${esc(r.name)}</strong><br><small>${Number(r.student_count||0).toLocaleString('th-TH')} คน · ครูผู้สร้าง: ${esc(r.teacher_name||'-')}</small></span></label>`).join('')||'<p class="muted">ไม่พบห้องเรียน หรือยังไม่ได้ระบุโรงเรียนในโปรไฟล์</p>'}</div><button type="submit" ${rooms.length?'':'disabled'}>เรียกดูนักเรียนในห้องที่เลือก</button></form></div><div id="school-student-results"></div>`;
+ app.innerHTML=`<button class="secondary" data-action="students">ย้อนกลับ</button><div class="card" style="margin-top:18px"><h1>ตรวจสอบข้อมูลนักเรียนกับฐานข้อมูล</h1><p class="muted">โรงเรียน: ${esc(profile.organization||'-')} · เลือกห้องเรียนที่ต้องการ ระบบจะดึงนักเรียนทั้งหมดจากห้องที่เลือกเข้าบัญชีครูของคุณทันที</p><form id="school-student-retrieve-form"><div class="grid grid-cards">${rooms.map(r=>`<label class="choice"><input type="checkbox" name="class_ids" value="${esc(r.id)}"><span><strong>${esc(r.name)}</strong><br><small>${Number(r.student_count||0).toLocaleString('th-TH')} คน · ครูผู้สร้าง: ${esc(r.teacher_name||'-')}</small></span></label>`).join('')||'<p class="muted">ไม่พบห้องเรียน หรือยังไม่ได้ระบุโรงเรียนในโปรไฟล์</p>'}</div><button type="submit" ${rooms.length?'':'disabled'}>ตรวจสอบและดึงข้อมูลนักเรียน</button></form></div><div id="school-student-results"></div>`;
 }
 async function renderSchoolStudents(classIds){
- const result=await api('students',{mode:'school-retrieve',class_ids:classIds}),rows=result.students||[];
- const roomNames=[...new Set(rows.flatMap(s=>(s.classes||[]).map(c=>c.name)))],box=document.querySelector('#school-student-results');if(!box)return;
- box.innerHTML=`<div class="card"><h2>ผลการเรียกดูนักเรียน</h2><p class="muted">โรงเรียน: ${esc(result.school||profile.organization||'-')} · ${rows.length.toLocaleString('th-TH')} คน · ห้อง: ${esc(roomNames.join(', ')||'-')}</p><div class="tablewrap"><table><thead><tr><th>รหัสนักเรียน</th><th>ชื่อ–นามสกุล</th><th>ห้องเรียน</th></tr></thead><tbody>${rows.map(s=>`<tr><td>${esc(s.student_code||'-')}</td><td>${esc(s.name||'-')}</td><td>${esc((s.classes||[]).map(c=>c.name+(c.student_number?' (เลขที่ '+c.student_number+')':'')).join(', ')||'-')}</td></tr>`).join('')}</tbody></table></div>${rows.length?'':'<p class="muted">ไม่พบนักเรียนในห้องที่เลือก</p>'}</div>`;
+ const result=await api('students',{mode:'school-retrieve',class_ids:classIds});
+ const box=document.querySelector('#school-student-results');if(!box)return;
+ box.innerHTML=`<div class="card"><h2>ดึงข้อมูลนักเรียนสำเร็จ</h2><p>โรงเรียน: ${esc(result.school||profile.organization||'-')}</p><p>นักเรียนในห้องที่เลือก: <strong>${Number(result.selected_students||0).toLocaleString('th-TH')} คน</strong></p><p>เชื่อมโยงเข้าบัญชีครูแล้ว: <strong>${Number(result.linked_or_active||0).toLocaleString('th-TH')} คน</strong></p><p class="muted">ระบบนำข้อมูลนักเรียนจากฐานข้อมูลเข้าสู่รายการนักเรียนในความดูแลของคุณแล้ว โดยไม่สร้างบัญชีใหม่และไม่แสดงรายชื่อนักเรียน</p></div>`;
+ await teacherHome('students');
+ toast(`ดึงข้อมูลนักเรียน ${Number(result.linked_or_active||0).toLocaleString('th-TH')} คนเรียบร้อยแล้ว`);
 }
 async function extraSubmit(f,d){const id=f.getAttribute('id');
  if(id==='school-student-retrieve-form'){const class_ids=new FormData(f).getAll('class_ids');if(!class_ids.length)throw Error('กรุณาเลือกห้องเรียนอย่างน้อย 1 ห้อง');await renderSchoolStudents(class_ids);return true;}
