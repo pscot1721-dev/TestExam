@@ -6,7 +6,7 @@ returns text language sql immutable
 set search_path=astroexam,pg_temp
 as $$
  select lower(trim(regexp_replace(
-  regexp_replace(coalesce(p_name,''),'^((ศ\\.?|รศ\\.?|ผศ\\.?|ดร\\.?|อาจารย์|นาย|นางสาว|นาง)[[:space:]]*)+','','i'),
+  regexp_replace(coalesce(p_name,''),'^((ศ[.]?|รศ[.]?|ผศ[.]?|ดร[.]?|อาจารย์|นาย|นางสาว|นาง)[[:space:]]*)+','','i'),
   '[[:space:]]+',' ','g'
  )));
 $$;
