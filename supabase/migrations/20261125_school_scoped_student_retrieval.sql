@@ -105,6 +105,8 @@ declare
      )
     )
    );
+
+  elsif p_action='students' then
 $code$;
 begin
   select pg_get_functiondef(
