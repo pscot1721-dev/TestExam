@@ -223,3 +223,34 @@ BEGIN
   EXECUTE fn;
 END
 $patch$;
+
+-- Allow teachers linked to shared classes to read class metadata and rosters.
+-- Ownership remains with the original teacher; this only grants SELECT visibility.
+DROP POLICY IF EXISTS classes_read ON astroexam.classes;
+CREATE POLICY classes_read ON astroexam.classes
+FOR SELECT TO ae_runtime
+USING (
+  astroexam.actor_role() = 'admin'
+  OR teacher_id = astroexam.actor()
+  OR EXISTS (
+    SELECT 1 FROM astroexam.teacher_classes tc
+    WHERE tc.class_id = classes.id AND tc.teacher_id = astroexam.actor()
+  )
+  OR EXISTS (
+    SELECT 1 FROM astroexam.class_members m
+    WHERE m.class_id = classes.id AND m.student_id = astroexam.actor()
+  )
+);
+
+DROP POLICY IF EXISTS members_read ON astroexam.class_members;
+CREATE POLICY members_read ON astroexam.class_members
+FOR SELECT TO ae_runtime
+USING (
+  astroexam.actor_role() = 'admin'
+  OR teacher_id = astroexam.actor()
+  OR student_id = astroexam.actor()
+  OR EXISTS (
+    SELECT 1 FROM astroexam.teacher_classes tc
+    WHERE tc.class_id = class_members.class_id AND tc.teacher_id = astroexam.actor()
+  )
+);
