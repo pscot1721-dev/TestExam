@@ -949,18 +949,6 @@ async function teacherHome(tab='dashboard'){
  ${statsPanel||'<div class="card empty">กรุณาเลือกแบบทดสอบเพื่อดูรายงาน</div>'}
  <div class="card tablewrap"><table class="report-wide"><thead><tr><th rowspan="2">เลขที่</th><th rowspan="2">รหัสนักเรียน</th><th rowspan="2">ชื่อ–นามสกุล</th><th rowspan="2">ห้องเรียน</th>${selectedExams.map(e=>`<th colspan="3">${esc(examTitleWithScore(e))}</th>`).join('')}</tr><tr>${selectedExams.map(e=>`<th>คะแนนที่ได้</th><th>%</th><th>ตรวจ/รายงาน</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.student.room.student_number||'-')}</td><td>${esc(r.student.student_code)}</td><td>${esc(r.student.name)}</td><td>${esc(sortClasses(r.student.classes||[]).map(c=>c.name).join(', '))}</td>${r.scores.map((x,idx)=>{const total=Number(selectedExams[idx]?.total_score||0);const pct=x&&x.status==='submitted'&&total?Math.round(Number(x.score||0)/total*10000)/100:'';return `<td>${x&&x.status==='submitted'?`<span class="score-ok">${esc(x.score)}</span>`:x?'<span class="score-miss">กำลังทำ</span>':'<span class="score-miss">-</span>'}</td><td>${pct===''?'-':pct+'%'}</td><td>${x?.id?`<button class="secondary small-btn" data-action="attempt-report" data-id="${x.id}">ตรวจ/ดูรายงาน</button>`:'-'}</td>`}).join('')}</tr>`).join('')}</tbody></table>${rows.length?'':'<div class="empty">ไม่พบนักเรียนในเงื่อนไขนี้</div>'}</div>`;
  app.innerHTML+='</div>';}
-function studentCheckForm(code=''){
- app.innerHTML=`${backButton('students','ย้อนกลับ')}<form id="student-check-form" class="card" style="max-width:720px;margin-top:18px"><span class="pill">ตรวจสอบฐานข้อมูล</span><h1 style="margin-top:12px">ตรวจสอบข้อมูลนักเรียนกับฐานข้อมูล</h1><p class="muted">กรอกรหัสนักเรียนก่อนเพิ่มเข้าห้องเรียน ถ้ามีข้อมูลอยู่แล้ว ระบบจะดึงบัญชีเดิมมาใช้ ไม่สร้างบัญชีซ้ำ</p>${field('รหัสนักเรียน','student_code',code,'text','required pattern="[A-Za-z0-9_-]{1,40}" maxlength="40"')}<button type="submit">ตรวจสอบข้อมูล</button><div class="form-error" role="alert"></div></form>`;
-}
-function renderStudentCheckResult(info,code){
- if(info?.exists){
-  const s=info.student||{};
-  const room=(info.source_classes||[])[0]||{};
-  app.innerHTML=`${backButton('students','ย้อนกลับ')}<div class="card" style="max-width:760px;margin-top:18px"><span class="pill">พบข้อมูลในฐานข้อมูล</span><h1 style="margin-top:12px">${esc(s.name||'-')}</h1><p class="muted">รหัสนักเรียน ${esc(s.student_code||code)}${room.name?`<br>ห้องเรียนเดิม: ${esc(room.name)}${room.student_number?` · เลขที่ ${esc(room.student_number)}`:''}`:''}</p><h3>ต้องการดึงนักเรียนอย่างไร</h3><p class="muted">ระบบจะสร้าง/ใช้ห้องเรียนชื่อเดียวกันในบัญชีครูของคุณ และแสดงรายชื่อทันทีหลังดึงข้อมูลสำเร็จ</p><div class="row"><button type="button" data-action="student-link-one-room" data-code="${esc(s.student_code||code)}">ดึงเฉพาะนักเรียนคนนี้</button><button type="button" class="secondary" data-action="student-link-class-room" data-code="${esc(s.student_code||code)}" ${room.name?'':'disabled'}>ดึงทั้งห้องเรียนเดียวกัน</button></div>${room.name?'':'<p class="warn">ยังไม่พบห้องเรียนเดิม จึงดึงได้เฉพาะนักเรียนคนนี้</p>'}</div>`;
- }else{
-  app.innerHTML=`${backButton('students','ย้อนกลับ')}<div class="card" style="max-width:760px;margin-top:18px"><span class="pill">ยังไม่พบข้อมูล</span><h1 style="margin-top:12px">ยังไม่มีรหัส ${esc(code)} ในฐานข้อมูล</h1><p class="muted">ให้เพิ่มนักเรียนใหม่ตามปกติ โดยระบบจะกรอกรหัสนี้ไว้ให้ก่อน</p><button data-action="student-add-prefill" data-code="${esc(code)}">เพิ่มนักเรียนใหม่ด้วยรหัสนี้</button></div>`;
- }
-}
 function studentForm(s={}){
  const selected=window._studentClassFilter||s.classes?.[0]?.id||'';
  const room=(s.classes||[]).find(c=>c.id===selected)||(s.classes||[])[0]||{};
