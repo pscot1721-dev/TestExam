@@ -1176,7 +1176,7 @@ function timeline(a){
  return rows.map(r=>`<tr><td>${esc(r.label)}</td><td>${esc(r.start)}</td><td>${esc(r.end)}</td><td>${esc(r.seconds)}</td><td>${deviceLabel(r.device)}</td></tr>`).join('');
 }
 async function report(id,classId=window._reportClass||''){lastExam=id;currentReport=null;window._reportClass=classId;const payload={exam_id:id,...(classId?{class_id:classId}:{})};const [rows,summary]=await Promise.all([api('report',payload),api('report-summary',payload)]);window._reportRows=rows;window._reportSummary=summary;const e=exams.find(x=>x.id===id)||{};app.innerHTML=`${backButton('exams','ย้อนกลับ')}<div class="row between"><div><span class="pill">รายงานข้อสอบ</span><h1 style="margin-top:12px">${esc(e.title||'รายงานผลสอบ')}</h1></div><button class="secondary" data-action="reports">รายงานคะแนนสะสม</button></div><div class="card"><label>แสดงผลตามห้องเรียน<select id="report-class-filter"><option value="">ทุกห้องเรียน</option>${sortClasses(classes.filter(c=>!c.archived)).map(c=>`<option value="${c.id}" ${c.id===classId?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label></div><div class="stats">${[['มอบหมาย',summary.assigned],['เริ่มสอบ',summary.started],['ส่งแล้ว',summary.submitted],['ยังไม่เริ่ม',Math.max(0,summary.assigned-summary.started)],['คะแนนเฉลี่ย',summary.average??'—'],['คะแนนสูงสุด',summary.maximum??'—'],['คะแนนต่ำสุด',summary.minimum??'—']].map(([l,v])=>`<div class="card"><small>${l}</small><div class="stat">${v}</div></div>`).join('')}</div><div class="card"><div class="row"><button class="secondary" data-action="report" data-id="${id}">รีเฟรชรายงาน</button><button class="secondary" data-action="export-report" data-id="${id}">ส่งออก Excel</button></div><div class="tablewrap"><table><thead><tr><th>เลขที่</th><th>รหัสนักเรียน</th><th>ชื่อ / ห้อง</th><th>เริ่ม / ส่ง</th><th>สถานะ</th><th>คะแนน</th><th>ตรวจ/รายงาน</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.student_number||'-')}</td><td>${esc(r.student_code)}</td><td>${esc(r.student_name)}<br><small>${esc((r.class_names||[]).join(', '))}</small></td><td>${r.started_at?date(r.started_at):'-'}<br><small>${r.submitted_at?date(r.submitted_at):'ยังไม่ส่ง'}</small></td><td>${r.status==='submitted'?(r.submission_type==='auto'?'ส่งอัตโนมัติ':'ส่งแล้ว'):'กำลังทำ'}${r.pending_grades?'<br>รอตรวจ '+r.pending_grades+' ข้อ':''}</td><td>${r.score} / ${r.total_score}</td><td><button data-action="attempt-report" data-id="${r.id}">ตรวจ/ดูรายงาน</button></td></tr>`).join('')}</tbody></table></div>${rows.length?'':'<div class="empty">ยังไม่มีนักเรียนเริ่มสอบในห้องที่เลือก</div>'}</div>`;}function requireXLSX(){if(typeof XLSX==='undefined')throw Error('โหลดระบบ Excel ไม่สำเร็จ กรุณาตรวจอินเทอร์เน็ตแล้วลองใหม่')}
-function downloadStudentTemplate(){requireXLSX();const ws=XLSX.utils.aoa_to_sheet([['เลขที่','รหัสนักเรียน','ชื่อ–นามสกุล','รหัสผ่าน','ห้องเรียน','ครูที่ปรึกษา'],['1','TEST001','นักเรียนทดสอบ 1','1234','ม.5/1','ครูตัวอย่าง']]);ws['!cols']=[{wch:10},{wch:18},{wch:28},{wch:16},{wch:16},{wch:24}];ws['!autofilter']={ref:'A1:F2'};['A2','B2','D2'].forEach(c=>{if(ws[c])ws[c].z='@'});const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'นักเรียน');XLSX.writeFile(wb,'แบบฟอร์มนำเข้านักเรียน.xlsx')}
+function downloadStudentTemplate(){requireXLSX();const ws=XLSX.utils.aoa_to_sheet([['เลขที่','รหัสนักเรียน','ชื่อ–นามสกุล','รหัสผ่าน','ห้องเรียน','ครูที่ปรึกษา'],['1','TEST001','นักเรียนทดสอบ 1','1234','ม.6/1','ครูตัวอย่าง']]);ws['!cols']=[{wch:10},{wch:18},{wch:28},{wch:16},{wch:16},{wch:24}];ws['!autofilter']={ref:'A1:F2'};['A2','B2','D2'].forEach(c=>{if(ws[c])ws[c].z='@'});const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'นักเรียน');XLSX.writeFile(wb,'แบบฟอร์มนำเข้านักเรียน.xlsx')}
 function downloadTeacherTemplate(){requireXLSX();const ws=XLSX.utils.aoa_to_sheet([['Username','ชื่อ–นามสกุล','โรงเรียน','รหัสผ่านเริ่มต้น (8 ตัว)'],['teacher001','ครูตัวอย่าง','โรงเรียนตัวอย่าง','Abc12345']]);ws['!cols']=[{wch:20},{wch:28},{wch:28},{wch:28}];ws['!autofilter']={ref:'A1:D2'};if(ws.D2)ws.D2.z='@';const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'ครู');XLSX.writeFile(wb,'แบบฟอร์มนำเข้าครู.xlsx')}
 function importTeachersForm(){window._teacherImport=null;app.innerHTML=`<button class="secondary" data-action="admin-home">ย้อนกลับ</button><div class="card" style="margin-top:18px"><div class="row between"><div><h1>นำเข้าครูจาก Excel</h1></div><button type="button" class="secondary" data-action="download-teacher-template">ดาวน์โหลดแบบฟอร์ม Excel</button></div><label>ไฟล์ Excel<input id="teacher-excel" type="file" accept=".xlsx,.xls"></label><button type="button" data-action="preview-teacher-excel" style="margin-top:10px">ตรวจสอบไฟล์ Excel</button><div id="teacher-import-preview" style="margin-top:18px"></div></div>`;}
 async function previewTeacherExcel(file){
@@ -1248,7 +1248,7 @@ async function confirmImportTeachers(){
  const preview=results.slice(0,100);
  app.innerHTML=`<button class="secondary" data-action="admin-home">ย้อนกลับ</button><div class="card" style="margin-top:18px"><h1>ผลการนำเข้าครู</h1><p><strong>สำเร็จ ${success.toLocaleString('th-TH')} บัญชี</strong> · ไม่สำเร็จ ${failed.toLocaleString('th-TH')} บัญชี · ข้าม ${skipped.toLocaleString('th-TH')} รายการ</p><p class="muted">แสดงผล ${preview.length.toLocaleString('th-TH')} รายการแรก จากทั้งหมด ${results.length.toLocaleString('th-TH')} รายการ</p><div class="tablewrap"><table><thead><tr><th>แถว</th><th>Username</th><th>ชื่อ–นามสกุล</th><th>ผลการดำเนินการ</th></tr></thead><tbody>${preview.map(x=>`<tr><td>${x.row}</td><td>${esc(x.username)}</td><td>${esc(x.name)}</td><td class="${x.status==='success'?'good':x.status==='failed'?'danger':'muted'}">${esc(x.result)}</td></tr>`).join('')}</tbody></table></div>${results.length>100?'<p class="muted">รายการทั้งหมดถูกประมวลผลแล้ว แม้จะแสดงเพียง 100 รายการแรกในตารางนี้</p>':''}</div>`;
 }
-function importStudentsForm(){app.innerHTML=`<button class="secondary" data-action="students">ย้อนกลับ</button><div class="card" style="margin-top:18px"><div class="row between"><div><h1>นำเข้านักเรียนจาก Excel</h1><p class="muted">ใช้หัวคอลัมน์: เลขที่, รหัสนักเรียน, ชื่อ–นามสกุล, รหัสผ่าน, ห้องเรียน, โรงเรียน และครูที่ปรึกษา โดยชื่อห้องต้องมีอยู่ในระบบแล้ว</p></div><button class="secondary" data-action="download-student-template">ดาวน์โหลดแบบฟอร์ม Excel</button></div><label>ไฟล์ Excel<input id="student-excel" type="file" accept=".xlsx,.xls"></label><button data-action="preview-student-excel" style="margin-top:10px">ตรวจสอบไฟล์ Excel</button><div id="import-preview" style="margin-top:18px"></div></div>`;}
+function importStudentsForm(){app.innerHTML=`<button class="secondary" data-action="students">ย้อนกลับ</button><div class="card" style="margin-top:18px"><div class="row between"><div><h1>นำเข้านักเรียนจาก Excel</h1><p class="muted">ใช้หัวคอลัมน์: เลขที่, รหัสนักเรียน, ชื่อ–นามสกุล, รหัสผ่าน, ห้องเรียน, โรงเรียน และครูที่ปรึกษา ระบุห้องเรียนในรูปแบบ ม.(ชั้น)/(ห้อง) เช่น ม.6/1 ระบบจะสร้างห้องเรียนให้อัตโนมัติหากยังไม่มี</p></div><button class="secondary" data-action="download-student-template">ดาวน์โหลดแบบฟอร์ม Excel</button></div><label>ไฟล์ Excel<input id="student-excel" type="file" accept=".xlsx,.xls"></label><button data-action="preview-student-excel" style="margin-top:10px">ตรวจสอบไฟล์ Excel</button><div id="import-preview" style="margin-top:18px"></div></div>`;}
 async function previewStudentExcel(file){
  requireXLSX();
  const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
@@ -1258,7 +1258,7 @@ async function previewStudentExcel(file){
  if(!rows.length)throw Error('ไม่พบข้อมูลในไฟล์ Excel');
  const classMap=new Map(sortClasses(classes.filter(c=>!c.archived)).map(c=>[c.name.trim(),c.id]));
  const existingNumbers=new Set();
- students.forEach(s=>(s.classes||[]).forEach(c=>{if(c.student_number)existingNumbers.add(c.id+'|'+String(c.student_number).trim())}));
+ students.forEach(s=>(s.classes||[]).forEach(c=>{if(c.student_number)existingNumbers.add(c.name+'|'+String(c.student_number).trim())}));
  const seenCode=new Set(),seenNo=new Set();
  const parsed=rows.map((r,i)=>{
   const student_number=String(r['เลขที่']||'').trim();
@@ -1268,6 +1268,7 @@ async function previewStudentExcel(file){
   const className=String(r['ห้องเรียน']||'').trim();
   const school=profile.organization||'';
   const advisor_name=String(r['ครูที่ปรึกษา']||'').trim();
+  const roomMatch=className.match(/^ม\.(\d{1,2})\/(\d{1,2})$/);
   const class_id=classMap.get(className);
   let error='';
   if(!/^\d{1,9}$/.test(student_number)||Number(student_number)<1)error='เลขที่ไม่ถูกต้อง';
@@ -1276,12 +1277,12 @@ async function previewStudentExcel(file){
   else if(name.length>150)error='ชื่อ–นามสกุลยาวเกิน 150 ตัวอักษร';
   else if(advisor_name.length>150)error='ชื่อครูที่ปรึกษายาวเกิน 150 ตัวอักษร';
   else if(password&&!/^\d{4}$/.test(password))error='PIN ต้องเป็นตัวเลข 4 ตัว';
-  else if(!class_id)error='ไม่พบห้องเรียน';
+  else if(!roomMatch||Number(roomMatch[1])<1||Number(roomMatch[2])<1)error='รูปแบบห้องไม่ถูกต้อง (ตัวอย่าง ม.6/1)';
   else if(seenCode.has(code))error='รหัสซ้ำในไฟล์';
-  else if(seenNo.has(class_id+'|'+student_number))error='เลขที่ซ้ำในห้องเดียวกัน';
-  else if(existingNumbers.has(class_id+'|'+student_number))error='เลขที่นี้มีอยู่แล้วในห้อง';
+  else if(seenNo.has(className+'|'+student_number))error='เลขที่ซ้ำในห้องเดียวกัน';
+  else if(existingNumbers.has(className+'|'+student_number))error='เลขที่นี้มีอยู่แล้วในห้อง';
   seenCode.add(code);
-  if(class_id)seenNo.add(class_id+'|'+student_number);
+  seenNo.add(className+'|'+student_number);
   return {row:i+2,student_number,student_code:code,name,password,class_id,class_name:className,school,advisor_name,error};
  });
  window._studentImport=parsed;
@@ -1300,6 +1301,20 @@ async function confirmImportStudents(){
  if(!confirm(`ยืนยันนำเข้านักเรียน ${valid.length} คน?\nรายการที่ไม่ผ่านการตรวจสอบ ${parsed.length-valid.length} รายการจะถูกข้าม`))return;
  const results=parsed.filter(x=>x.error).map(x=>({row:x.row,student_number:x.student_number,student_code:x.student_code,name:x.name,class_name:x.class_name,status:'skipped',result:x.error}));
  const progress=$('#student-import-progress');
+ try{
+  const missingRooms=[...new Set(valid.filter(x=>!x.class_id).map(x=>x.class_name))];
+  for(let i=0;i<missingRooms.length;i++){
+   if(progress)progress.textContent=`กำลังเตรียมสร้างห้องเรียน ${i+1} / ${missingRooms.length}...`;
+   await api('class-save',{name:missingRooms[i],description:''});
+  }
+  if(missingRooms.length){
+   const refreshed=await api('classes');
+   const roomMap=new Map(refreshed.map(c=>[String(c.name||'').trim(),c.id]));
+   for(const x of valid){x.class_id=x.class_id||roomMap.get(x.class_name);}
+  }
+  const unresolved=valid.filter(x=>!x.class_id);
+  if(unresolved.length)throw Error('ไม่สามารถสร้างหรือค้นหาห้องเรียน: '+[...new Set(unresolved.map(x=>x.class_name))].join(', '));
+ }catch(err){throw Error('เตรียมห้องเรียนสำหรับนำเข้าไม่สำเร็จ: '+err.message);}
  const payload=x=>({student_number:x.student_number,student_code:x.student_code,name:x.name,password:x.password,class_id:x.class_id,school:x.school,advisor_name:x.advisor_name});
  const batchSize=50;
  let completed=0;
