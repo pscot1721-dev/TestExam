@@ -663,6 +663,96 @@ body.teacher-workspace.sidebar-collapsed main{padding-left:292px}
   margin:2px 0 0!important;
 }
 
+
+/* Exam picker should behave like a select: compact trigger, floating list, title only */
+#cumulative-report-filter .report-controls .report-exam-dropdown,
+#export-report-filter .report-controls .report-exam-dropdown{
+ position:relative!important;
+ width:100%!important;
+ height:56px!important;
+ min-height:56px!important;
+ max-height:56px!important;
+ overflow:visible!important;
+ box-sizing:border-box!important;
+ z-index:5!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown>summary,
+#export-report-filter .report-controls .report-exam-dropdown>summary{
+ width:100%!important;
+ height:56px!important;
+ min-height:56px!important;
+ max-height:56px!important;
+ padding:0 46px 0 16px!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:space-between!important;
+ box-sizing:border-box!important;
+ border:1px solid var(--line-2)!important;
+ border-radius:16px!important;
+ background-color:#fff!important;
+ color:var(--ink-2)!important;
+ font:inherit!important;
+ font-weight:600!important;
+ line-height:normal!important;
+ list-style:none!important;
+ cursor:pointer!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown>summary:after,
+#export-report-filter .report-controls .report-exam-dropdown>summary:after{
+ content:""!important;
+ display:block!important;
+ position:absolute!important;
+ right:18px!important;
+ top:50%!important;
+ width:9px!important;
+ height:9px!important;
+ border-right:2px solid #718196!important;
+ border-bottom:2px solid #718196!important;
+ transform:translateY(-70%) rotate(45deg)!important;
+ font-size:0!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown[open]>summary,
+#export-report-filter .report-controls .report-exam-dropdown[open]>summary{
+ border-radius:16px!important;
+ border-color:var(--line-2)!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown[open]>.check-list,
+#export-report-filter .report-controls .report-exam-dropdown[open]>.check-list{
+ position:absolute!important;
+ top:calc(100% + 6px)!important;
+ left:0!important;
+ right:0!important;
+ width:100%!important;
+ max-height:260px!important;
+ overflow-y:auto!important;
+ overflow-x:hidden!important;
+ margin:0!important;
+ padding:6px!important;
+ border:1px solid var(--line-2)!important;
+ border-radius:12px!important;
+ background:#fff!important;
+ box-shadow:0 12px 28px rgba(15,23,42,.14)!important;
+ box-sizing:border-box!important;
+ z-index:100!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown .check-list label,
+#export-report-filter .report-controls .report-exam-dropdown .check-list label{
+ display:flex!important;
+ align-items:center!important;
+ gap:10px!important;
+ padding:10px 12px!important;
+ min-height:42px!important;
+ border-radius:8px!important;
+ font-weight:500!important;
+ cursor:pointer!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown .check-list label:hover,
+#export-report-filter .report-controls .report-exam-dropdown .check-list label:hover{background:var(--primary-soft)!important}
+#cumulative-report-filter .report-controls .report-exam-dropdown .check-list label small,
+#export-report-filter .report-controls .report-exam-dropdown .check-list label small{display:none!important}
+#cumulative-report-filter .report-controls .report-exam-dropdown .check-list input[type=checkbox],
+#export-report-filter .report-controls .report-exam-dropdown .check-list input[type=checkbox]{flex:0 0 18px!important;width:18px!important;height:18px!important;margin:0!important}
+
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
@@ -1178,7 +1268,7 @@ async function teacherHome(tab='dashboard'){
  const roomName=classId?(activeClasses.find(c=>c.id===classId)?.name||'ห้องเรียนที่เลือก'):'ทุกห้องเรียน';
  const statsPanel=reportStatsPanel(rows,selectedExams,examDetails,shownStudents,roomName,classId);
 
- app.innerHTML=`${nav('reports')}<div class="teacher-main"><div class="page-head"><div><h1 class="page-title"><span class="page-title-icon" aria-hidden="true">${uiIcon('chart-column-increasing')}</span>รายงานคะแนนรายแบบทดสอบ</h1></div></div><form id="cumulative-report-filter" class="card"><div class="report-controls"><div><h3>ห้องเรียน</h3><select name="class_id"><option value="">ทุกห้องเรียน</option>${activeClasses.map(c=>`<option value="${c.id}" ${c.id===classId?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div><div><h3>แบบทดสอบ</h3><details class="report-exam-dropdown"><summary>เลือกแบบทดสอบ</summary><div class="check-list">${ordered.map(e=>`<label><input type="checkbox" name="exam_ids" value="${e.id}" ${selected.includes(e.id)?'checked':''}> ${esc(examTitleWithScore(e))} <small>${esc([e.subject,e.course].filter(Boolean).join(' · '))}</small></label>`).join('')||'<p class="muted">ยังไม่มีข้อสอบ</p>'}</div></details></div></div><div class="report-filter-actions"><button type="submit">แสดงรายงานตามตัวกรอง</button><button type="button" data-action="export-report-options">ส่งออกผลคะแนนเป็น Excel</button></div></form>
+ app.innerHTML=`${nav('reports')}<div class="teacher-main"><div class="page-head"><div><h1 class="page-title"><span class="page-title-icon" aria-hidden="true">${uiIcon('chart-column-increasing')}</span>รายงานคะแนนรายแบบทดสอบ</h1></div></div><form id="cumulative-report-filter" class="card"><div class="report-controls"><div><h3>ห้องเรียน</h3><select name="class_id"><option value="">ทุกห้องเรียน</option>${activeClasses.map(c=>`<option value="${c.id}" ${c.id===classId?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div><div><h3>แบบทดสอบ</h3><details class="report-exam-dropdown"><summary>เลือกแบบทดสอบ (${selected.length} รายการ)</summary><div class="check-list">${ordered.map(e=>`<label><input type="checkbox" name="exam_ids" value="${e.id}" ${selected.includes(e.id)?'checked':''}> ${esc(e.title)}</label>`).join('')||'<p class="muted">ยังไม่มีข้อสอบ</p>'}</div></details></div></div><div class="report-filter-actions"><button type="submit">แสดงรายงานตามตัวกรอง</button><button type="button" data-action="export-report-options">ส่งออกผลคะแนนเป็น Excel</button></div></form>
  <div id="report-results" ${showReport?'':'hidden'}>
  ${statsPanel||'<div class="card empty">กรุณาเลือกแบบทดสอบเพื่อดูรายงาน</div>'}
  <div class="card tablewrap"><table class="report-wide"><thead><tr><th rowspan="2">เลขที่</th><th rowspan="2">รหัสนักเรียน</th><th rowspan="2">ชื่อ–นามสกุล</th><th rowspan="2">ห้องเรียน</th>${selectedExams.map(e=>`<th colspan="3">${esc(examTitleWithScore(e))}</th>`).join('')}</tr><tr>${selectedExams.map(e=>`<th>คะแนนที่ได้</th><th>%</th><th>ตรวจ/รายงาน</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.student.room.student_number||'-')}</td><td>${esc(r.student.student_code)}</td><td>${esc(r.student.name)}</td><td>${esc(sortClasses(r.student.classes||[]).map(c=>c.name).join(', '))}</td>${r.scores.map((x,idx)=>{const total=Number(selectedExams[idx]?.total_score||0);const pct=x&&x.status==='submitted'&&total?Math.round(Number(x.score||0)/total*10000)/100:'';return `<td>${x&&x.status==='submitted'?`<span class="score-ok">${esc(x.score)}</span>`:x?'<span class="score-miss">กำลังทำ</span>':'<span class="score-miss">-</span>'}</td><td>${pct===''?'-':pct+'%'}</td><td>${x?.id?`<button class="secondary small-btn" data-action="attempt-report" data-id="${x.id}">ตรวจ/ดูรายงาน</button>`:'-'}</td>`}).join('')}</tr>`).join('')}</tbody></table>${rows.length?'':'<div class="empty">ไม่พบนักเรียนในเงื่อนไขนี้</div>'}</div></div>`;
@@ -1608,7 +1698,7 @@ function exportReportOptions(){
  const curClass=window._cumulativeClassFilter||activeClasses[0]?.id||'';
  const ordered=orderedExams(exams);
  const selected=window._cumulativeExamIds?.length?window._cumulativeExamIds:ordered.map(e=>e.id);
- app.innerHTML=`${backButton('reports','ย้อนกลับ')}<div style="margin-top:18px"><h1>เลือกข้อมูลผลคะแนนนักเรียน</h1><p class="muted">เลือกห้องเรียนและแบบทดสอบที่ต้องการส่งออก ระบบจะส่งออกเฉพาะคะแนนที่ได้ของแต่ละแบบทดสอบ</p></div>${nav('reports')}<form id="export-report-filter" class="card"><div class="report-controls"><div><h3>ห้องเรียน</h3><select name="class_id"><option value="">ทุกห้องเรียน</option>${activeClasses.map(c=>`<option value="${c.id}" ${c.id===curClass?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div><div><h3>แบบทดสอบ</h3><details class="report-exam-dropdown"><summary>เลือกแบบทดสอบ (${selected.length})</summary><div class="check-list">${ordered.map(e=>`<label><input type="checkbox" name="exam_ids" value="${e.id}" ${selected.includes(e.id)?'checked':''}> ${esc(examTitleWithScore(e))} <small>${esc([e.subject,e.course].filter(Boolean).join(' · '))}</small></label>`).join('')||'<p class="muted">ยังไม่มีข้อสอบ</p>'}</div></details></div></div><div class="report-filter-actions"><button type="submit">ส่งออกผลคะแนนเป็น Excel</button><div class="form-error" role="alert"></div></div></form>`;
+ app.innerHTML=`${backButton('reports','ย้อนกลับ')}<div style="margin-top:18px"><h1>เลือกข้อมูลผลคะแนนนักเรียน</h1><p class="muted">เลือกห้องเรียนและแบบทดสอบที่ต้องการส่งออก ระบบจะส่งออกเฉพาะคะแนนที่ได้ของแต่ละแบบทดสอบ</p></div>${nav('reports')}<form id="export-report-filter" class="card"><div class="report-controls"><div><h3>ห้องเรียน</h3><select name="class_id"><option value="">ทุกห้องเรียน</option>${activeClasses.map(c=>`<option value="${c.id}" ${c.id===curClass?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div><div><h3>แบบทดสอบ</h3><details class="report-exam-dropdown"><summary>เลือกแบบทดสอบ (${selected.length} รายการ)</summary><div class="check-list">${ordered.map(e=>`<label><input type="checkbox" name="exam_ids" value="${e.id}" ${selected.includes(e.id)?'checked':''}> ${esc(e.title)}</label>`).join('')||'<p class="muted">ยังไม่มีข้อสอบ</p>'}</div></details></div></div><div class="report-filter-actions"><button type="submit">ส่งออกผลคะแนนเป็น Excel</button><div class="form-error" role="alert"></div></div></form>`;
 }
 async function exportCumulativeReportExcel(classId=null,examIds=null){
  requireXLSX();
