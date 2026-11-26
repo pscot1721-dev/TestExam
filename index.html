@@ -591,6 +591,22 @@ body.teacher-workspace.sidebar-collapsed main{padding-left:292px}
   border-bottom:1px solid var(--line)!important;
 }
 
+
+/* Export report filter: identical field geometry and chevron treatment */
+#export-report-filter{padding:26px 30px!important}
+#export-report-filter .report-controls{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:24px!important;align-items:end!important}
+#export-report-filter .report-controls>div{display:flex!important;flex-direction:column!important;justify-content:flex-end!important;min-width:0!important;margin:0!important}
+#export-report-filter .report-controls h3{display:block!important;height:24px!important;min-height:24px!important;line-height:24px!important;margin:0 0 12px!important;padding:0!important;font-size:14px!important;font-weight:700!important}
+#export-report-filter .report-controls select,
+#export-report-filter .report-controls .report-exam-dropdown{display:block!important;width:100%!important;height:56px!important;min-height:56px!important;max-height:56px!important;box-sizing:border-box!important;margin:0!important;border:1px solid var(--line-2)!important;border-radius:16px!important;background-color:#fff!important;color:var(--ink-2)!important;font:inherit!important}
+#export-report-filter .report-controls select{appearance:none!important;-webkit-appearance:none!important;padding:0 46px 0 16px!important;line-height:54px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23718196' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 17px center!important;background-size:16px 16px!important;cursor:pointer!important}
+#export-report-filter .report-controls .report-exam-dropdown{overflow:hidden!important}
+#export-report-filter .report-controls .report-exam-dropdown>summary{display:flex!important;align-items:center!important;justify-content:space-between!important;width:100%!important;height:54px!important;min-height:54px!important;max-height:54px!important;box-sizing:border-box!important;margin:0!important;padding:0 46px 0 16px!important;list-style:none!important;position:relative!important;line-height:normal!important;color:var(--ink-2)!important;font:inherit!important;font-weight:600!important;background-color:transparent!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23718196' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 17px center!important;background-size:16px 16px!important;cursor:pointer!important}
+#export-report-filter .report-controls .report-exam-dropdown>summary::-webkit-details-marker{display:none!important}
+#export-report-filter .report-controls .report-exam-dropdown>summary::marker{content:""!important}
+#export-report-filter .report-controls .report-exam-dropdown>summary::after{content:none!important;display:none!important}
+@media(max-width:760px){#export-report-filter{padding:20px!important}#export-report-filter .report-controls{grid-template-columns:minmax(0,1fr)!important;gap:16px!important}}
+
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
@@ -1536,7 +1552,7 @@ function exportReportOptions(){
  const curClass=window._cumulativeClassFilter||activeClasses[0]?.id||'';
  const ordered=orderedExams(exams);
  const selected=window._cumulativeExamIds?.length?window._cumulativeExamIds:ordered.map(e=>e.id);
- app.innerHTML=`${backButton('reports','ย้อนกลับ')}<div style="margin-top:18px"><h1>เลือกข้อมูลผลคะแนนนักเรียน</h1><p class="muted">เลือกห้องเรียนและแบบทดสอบที่ต้องการส่งออก ระบบจะส่งออกเฉพาะคะแนนที่ได้ของแต่ละแบบทดสอบ</p></div>${nav('reports')}<form id="export-report-filter" class="card"><div class="report-controls"><div><label>ห้องเรียน<select name="class_id"><option value="">ทุกห้องเรียน</option>${activeClasses.map(c=>`<option value="${c.id}" ${c.id===curClass?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label></div><div><h3>แบบทดสอบ</h3><details class="report-exam-dropdown"><summary>เลือกแบบทดสอบ (${selected.length})</summary><div class="check-list">${ordered.map(e=>`<label><input type="checkbox" name="exam_ids" value="${e.id}" ${selected.includes(e.id)?'checked':''}> ${esc(examTitleWithScore(e))} <small>${esc([e.subject,e.course].filter(Boolean).join(' · '))}</small></label>`).join('')||'<p class="muted">ยังไม่มีข้อสอบ</p>'}</div></details></div></div><div class="report-filter-actions"><button type="submit">ส่งออกผลคะแนนเป็น Excel</button><div class="form-error" role="alert"></div></div></form>`;
+ app.innerHTML=`${backButton('reports','ย้อนกลับ')}<div style="margin-top:18px"><h1>เลือกข้อมูลผลคะแนนนักเรียน</h1><p class="muted">เลือกห้องเรียนและแบบทดสอบที่ต้องการส่งออก ระบบจะส่งออกเฉพาะคะแนนที่ได้ของแต่ละแบบทดสอบ</p></div>${nav('reports')}<form id="export-report-filter" class="card"><div class="report-controls"><div><h3>ห้องเรียน</h3><select name="class_id"><option value="">ทุกห้องเรียน</option>${activeClasses.map(c=>`<option value="${c.id}" ${c.id===curClass?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div><div><h3>แบบทดสอบ</h3><details class="report-exam-dropdown"><summary>เลือกแบบทดสอบ (${selected.length})</summary><div class="check-list">${ordered.map(e=>`<label><input type="checkbox" name="exam_ids" value="${e.id}" ${selected.includes(e.id)?'checked':''}> ${esc(examTitleWithScore(e))} <small>${esc([e.subject,e.course].filter(Boolean).join(' · '))}</small></label>`).join('')||'<p class="muted">ยังไม่มีข้อสอบ</p>'}</div></details></div></div><div class="report-filter-actions"><button type="submit">ส่งออกผลคะแนนเป็น Excel</button><div class="form-error" role="alert"></div></div></form>`;
 }
 async function exportCumulativeReportExcel(classId=null,examIds=null){
  requireXLSX();
