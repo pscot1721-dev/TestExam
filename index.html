@@ -324,23 +324,22 @@ body.login-view header{display:none}body.login-view main:has(.login.split){max-w
  .login-form-content{max-width:420px;margin:0 auto}
  .login-title{margin-bottom:10px}
 }
-/* ---------- Unified corner notification for all signed-in workspaces ---------- */
-#message{position:fixed;top:22px;right:22px;left:auto;bottom:auto;transform:translateX(18px);z-index:1200;display:flex;align-items:flex-start;gap:12px;width:min(420px,calc(100vw - 32px));box-sizing:border-box;padding:16px 42px 16px 16px;border:1px solid #d9e2ef;border-radius:14px;color:#25334a;background:#fff;box-shadow:0 14px 38px rgba(24,39,63,.18);font-size:14px;line-height:1.5;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;overflow-wrap:anywhere}
-#message .notification-icon{flex:0 0 24px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:800;color:#fff;background:#528fbd}
+/* ---------- Unified top-layer toast: consistent across every signed-in page ---------- */
+#message{position:fixed!important;top:104px!important;right:24px!important;left:auto!important;bottom:auto!important;z-index:2147483000!important;display:flex;flex:0 0 auto;align-items:flex-start;gap:12px;width:min(410px,calc(100vw - 40px))!important;min-width:0!important;max-width:calc(100vw - 40px)!important;height:auto!important;min-height:0!important;max-height:none!important;box-sizing:border-box;padding:16px!important;margin:0!important;border:1px solid #d9e2ef;border-radius:14px;color:#25334a;background:#fff;box-shadow:0 14px 38px rgba(24,39,63,.2);font-size:14px;line-height:1.5;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s ease,transform .2s ease;overflow-wrap:anywhere}
+#message .notification-icon{flex:0 0 28px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:16px;font-weight:800;color:#fff;background:#528fbd}
 #message .notification-copy{display:grid;gap:4px;min-width:0}
-#message .notification-title{font-size:14px;font-weight:750;color:inherit}
-#message .notification-text{font-size:13.5px;font-weight:500;color:inherit}
-#message .notification-close{position:absolute;right:12px;top:10px;border:0;background:transparent;color:#8793a5;font-size:21px;line-height:1;cursor:pointer;padding:2px 5px}
+#message .notification-title{font-size:15px;font-weight:750;color:inherit}
+#message .notification-text{font-size:14px;font-weight:500;color:inherit}
 #message[data-kind="error"]{color:#a5221b;border-color:#f0b8b4;background:#fff8f7}
 #message[data-kind="error"] .notification-icon{background:#d83a32}
 #message[data-kind="success"]{color:#176b47;border-color:#b8e3cc;background:#f5fbf7}
 #message[data-kind="success"] .notification-icon{background:#27935f}
 #message[data-kind="warning"]{color:#875600;border-color:#f0d39b;background:#fffbf1}
 #message[data-kind="warning"] .notification-icon{background:#d99a27}
-#message:not([hidden]){opacity:1;transform:translateX(0);pointer-events:auto}
-#message[hidden]{display:none}
+#message:not([hidden]){opacity:1;transform:translateY(0)}
+#message[hidden]{display:none!important}
 body.login-view #message{display:none!important}
-@media(max-width:650px){#message{top:12px;right:12px;width:calc(100vw - 24px)}}
+@media(max-width:650px){#message{top:82px!important;right:12px!important;width:calc(100vw - 24px)!important;max-width:calc(100vw - 24px)!important}}
 
 /* ---------- responsive ---------- */
 @media(max-width:900px){
@@ -874,7 +873,7 @@ function renderPasswordRecovery(){
  </form></div>`;
 }
 
-function toast(s,kind){const el=$('#message');if(!el||document.body.classList.contains('login-view'))return;let message=String(s??'').trim();if(!message)return;if(/new row for relation ["']?exams["']? violates check constraint ["']?exams_check/i.test(message))message='เวลาปิดรับคำตอบต้องอยู่หลังเวลาเปิดสอบ กรุณาตรวจสอบวันและเวลาอีกครั้ง';const inferred=kind||( /error|violat|failed|invalid|ไม่สำเร็จ|ไม่ถูกต้อง|กรุณา|ไม่พบ|ต้องระบุ|ต้องอยู่|หมดอายุ/i.test(message)?'error':/สำเร็จ|เรียบร้อย|บันทึกแล้ว|เพิ่มแล้ว|ลบแล้ว|อัปโหลดภาพแล้ว|เปลี่ยนสถานะข้อสอบแล้ว/i.test(message)?'success':'info');const title=inferred==='error'?'แจ้งเตือนข้อผิดพลาด':inferred==='success'?'ดำเนินการสำเร็จ':inferred==='warning'?'โปรดตรวจสอบ':'แจ้งให้ทราบ';el.innerHTML='<span class="notification-icon" aria-hidden="true">'+(inferred==='error'?'!':inferred==='success'?'✓':'i')+'</span><span class="notification-copy"><strong class="notification-title">'+esc(title)+'</strong><span class="notification-text">'+esc(message)+'</span></span><button type="button" class="notification-close" aria-label="ปิดการแจ้งเตือน">×</button>';el.dataset.kind=inferred;el.setAttribute('role',inferred==='error'?'alert':'status');el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.hidden=true;delete el.dataset.kind},5200)}
+function toast(s,kind){const el=$('#message');if(!el||document.body.classList.contains('login-view'))return;let message=String(s??'').trim();if(!message)return;if(/new row for relation ["']?exams["']? violates check constraint ["']?exams_check/i.test(message))message='เวลาปิดรับคำตอบต้องอยู่หลังเวลาเปิดสอบ กรุณาตรวจสอบวันและเวลาอีกครั้ง';const inferred=kind||( /error|violat|failed|invalid|ไม่สำเร็จ|ไม่ถูกต้อง|กรุณา|ไม่พบ|ต้องระบุ|ต้องอยู่|หมดอายุ/i.test(message)?'error':/สำเร็จ|เรียบร้อย|บันทึกแล้ว|เพิ่มแล้ว|ลบแล้ว|อัปโหลดภาพแล้ว|เปลี่ยนสถานะข้อสอบแล้ว/i.test(message)?'success':'info');const title=inferred==='error'?'แจ้งเตือนข้อผิดพลาด':inferred==='success'?'ดำเนินการสำเร็จ':inferred==='warning'?'โปรดตรวจสอบ':'แจ้งให้ทราบ';el.innerHTML='<span class="notification-icon" aria-hidden="true">'+(inferred==='error'?'!':inferred==='success'?'✓':'i')+'</span><span class="notification-copy"><strong class="notification-title">'+esc(title)+'</strong><span class="notification-text">'+esc(message)+'</span></span>';el.dataset.kind=inferred;el.setAttribute('role',inferred==='error'?'alert':'status');el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.hidden=true;delete el.dataset.kind},3000)}
 function date(v){return new Date(v).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})}
 function examDateTime(v){if(!v)return '-';const d=new Date(v);if(Number.isNaN(d.getTime()))return '-';const day=d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});const time=d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false});return `${day} เวลา ${time} น.`}
 function localDate(v){const d=new Date(v);return new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
@@ -1940,7 +1939,7 @@ document.addEventListener('change',event=>{
   if(all){all.checked=boxes.length>0&&selected===boxes.length;all.indeterminate=selected>0&&selected<boxes.length;}
  }
 });
-document.addEventListener('click',async event=>{if(event.target.closest('.notification-close')){$('#message').hidden=true;clearTimeout(toastTimer);return;}const b=event.target.closest('[data-action]');if(!b)return;const action=b.dataset.action,id=b.dataset.id;b.disabled=true;try{
+document.addEventListener('click',async event=>{const b=event.target.closest('[data-action]');if(!b)return;const action=b.dataset.action,id=b.dataset.id;b.disabled=true;try{
  if(await extraClick(action,id,b))return;
  if(['format-sup','format-sub','format-frac','format-bold','format-italic'].includes(action)){formatSelectedText(b.dataset.target,{ 'format-sup':'sup','format-sub':'sub','format-frac':'frac','format-bold':'bold','format-italic':'italic'}[action])}
  else if(action==='logout'){if(current?.status==='in_progress'){await save();if(dirty||conflict){throw Error('ยังมีคำตอบที่บันทึกไม่สำเร็จ กรุณารอหรือโหลดคำตอบล่าสุดก่อนออกจากระบบ')}recordEvent('page_exit');await flushEvents()}
