@@ -1181,8 +1181,7 @@ function assignmentStudentSet(assignments=[],shownStudents=[]){
 }
 function reportStatsCardsForExam(exam,stats,roomName,isAssigned){
  return `<section class="card report-exam-stat-card">
-  <div class="row between"><div><span class="pill">สถิติรายแบบทดสอบ</span><h2 style="margin-top:10px">${esc(examTitleWithScore(exam))}</h2><p class="muted">ห้องเรียน: ${esc(roomName||'ทุกห้องเรียน')}</p></div>${isAssigned?'<span class="pill good">มีการมอบหมายในกลุ่มนี้</span>':'<span class="pill warn">ยังไม่ได้มอบหมายให้กลุ่มนี้</span>'}</div>
-  ${isAssigned?'':`<div class="notice warn">ครูไม่ได้มอบหมายข้อสอบนี้ให้กับนักเรียนห้องนี้</div>`}
+  <div><h2>${esc(examTitleWithScore(exam))}</h2><p class="muted">ห้องเรียน: ${esc(roomName||'ทุกห้องเรียน')}</p></div>
   <div class="stats report-stats">
    <div class="card"><small>จำนวนนักเรียน</small><div class="stat">${stats.totalStudents}</div></div>
    <div class="card"><small>ทำข้อสอบแล้ว</small><div class="stat">${stats.doneStudents}</div></div>
