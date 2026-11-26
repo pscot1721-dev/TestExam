@@ -535,6 +535,62 @@ body.teacher-workspace.sidebar-collapsed main{padding-left:292px}
 #report-results[hidden]{display:none!important}
 @media(max-width:760px){#cumulative-report-filter{padding:20px!important}#cumulative-report-filter .report-controls{grid-template-columns:minmax(0,1fr)!important;gap:16px!important}#cumulative-report-filter .report-filter-actions>button{flex:1 1 100%!important;width:100%!important;min-width:0!important;max-width:none!important}}
 
+
+/* Match classroom select and exam dropdown dimensions and chevrons exactly */
+#cumulative-report-filter .report-controls select,
+#cumulative-report-filter .report-controls .report-exam-dropdown{
+  width:100%!important;
+  height:56px!important;
+  min-height:56px!important;
+  max-height:56px!important;
+  box-sizing:border-box!important;
+  border:1px solid var(--line-2)!important;
+  border-radius:16px!important;
+  background-color:#fff!important;
+  color:var(--ink-2)!important;
+  font:inherit!important;
+}
+#cumulative-report-filter .report-controls select{
+  display:block!important;
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  padding:0 46px 0 16px!important;
+  line-height:54px!important;
+  cursor:pointer!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23718196' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")!important;
+  background-repeat:no-repeat!important;
+  background-position:right 17px center!important;
+  background-size:16px 16px!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown{
+  overflow:hidden!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown>summary{
+  display:flex!important;
+  width:100%!important;
+  height:54px!important;
+  min-height:54px!important;
+  max-height:54px!important;
+  box-sizing:border-box!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  padding:0 46px 0 16px!important;
+  position:relative!important;
+  line-height:normal!important;
+  background-color:transparent!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23718196' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")!important;
+  background-repeat:no-repeat!important;
+  background-position:right 17px center!important;
+  background-size:16px 16px!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown>summary:after{
+  content:none!important;
+  display:none!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown[open]>summary{
+  border-bottom:1px solid var(--line)!important;
+}
+
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
