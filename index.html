@@ -324,19 +324,21 @@ body.login-view header{display:none}body.login-view main:has(.login.split){max-w
  .login-form-content{max-width:420px;margin:0 auto}
  .login-title{margin-bottom:10px}
 }
-/* ---------- Unified top-layer toast: consistent across every signed-in page ---------- */
-#message{position:fixed!important;top:104px!important;right:24px!important;left:auto!important;bottom:auto!important;z-index:2147483000!important;display:flex;flex:0 0 auto;align-items:flex-start;gap:12px;width:min(410px,calc(100vw - 40px))!important;min-width:0!important;max-width:calc(100vw - 40px)!important;height:auto!important;min-height:0!important;max-height:none!important;box-sizing:border-box;padding:16px!important;margin:0!important;border:1px solid #d9e2ef;border-radius:14px;color:#25334a;background:#fff;box-shadow:0 14px 38px rgba(24,39,63,.2);font-size:14px;line-height:1.5;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s ease,transform .2s ease;overflow-wrap:anywhere}
-#message .notification-icon{flex:0 0 28px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:16px;font-weight:800;color:#fff;background:#528fbd}
-#message .notification-copy{display:grid;gap:4px;min-width:0}
-#message .notification-title{font-size:15px;font-weight:750;color:inherit}
-#message .notification-text{font-size:14px;font-weight:500;color:inherit}
-#message[data-kind="error"]{color:#a5221b;border-color:#f0b8b4;background:#fff8f7}
-#message[data-kind="error"] .notification-icon{background:#d83a32}
-#message[data-kind="success"]{color:#176b47;border-color:#b8e3cc;background:#f5fbf7}
-#message[data-kind="success"] .notification-icon{background:#27935f}
-#message[data-kind="warning"]{color:#875600;border-color:#f0d39b;background:#fffbf1}
-#message[data-kind="warning"] .notification-icon{background:#d99a27}
-#message:not([hidden]){opacity:1;transform:translateY(0)}
+/* ---------- Two-state unified notification: success green / failure red ---------- */
+#message{position:fixed!important;top:104px!important;right:24px!important;left:auto!important;bottom:auto!important;z-index:2147483647!important;display:flex!important;align-items:flex-start!important;gap:13px!important;width:min(410px,calc(100vw - 40px))!important;min-width:0!important;max-width:calc(100vw - 40px)!important;height:auto!important;min-height:0!important;max-height:none!important;box-sizing:border-box!important;padding:17px 19px!important;margin:0!important;border:2px solid #16834b!important;border-radius:13px!important;color:#075b35!important;background:#effaf3!important;box-shadow:0 12px 34px rgba(12,35,25,.22)!important;font-size:14px!important;line-height:1.5!important;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s ease,transform .2s ease;overflow-wrap:anywhere}
+#message .notification-icon{flex:0 0 30px!important;width:30px!important;height:30px!important;border-radius:50%!important;display:grid!important;place-items:center!important;font-size:18px!important;font-weight:850!important;color:#fff!important;background:#16834b!important}
+#message .notification-copy{display:grid!important;gap:4px!important;min-width:0!important}
+#message .notification-title{display:block!important;margin:0!important;padding:0!important;font-size:16px!important;font-weight:800!important;line-height:1.4!important;color:#075b35!important}
+#message .notification-text{display:block!important;margin:0!important;padding:0!important;font-size:14px!important;font-weight:600!important;line-height:1.5!important;color:#126b40!important}
+#message[data-kind="error"]{border-color:#c62828!important;color:#8f1717!important;background:#fff1f1!important}
+#message[data-kind="error"] .notification-icon{background:#c62828!important}
+#message[data-kind="error"] .notification-title{color:#991b1b!important}
+#message[data-kind="error"] .notification-text{color:#b42318!important}
+#message[data-kind="success"]{border-color:#16834b!important;color:#075b35!important;background:#effaf3!important}
+#message[data-kind="success"] .notification-icon{background:#16834b!important}
+#message[data-kind="success"] .notification-title{color:#075b35!important}
+#message[data-kind="success"] .notification-text{color:#126b40!important}
+#message:not([hidden]){opacity:1;transform:translateY(0);pointer-events:none}
 #message[hidden]{display:none!important}
 body.login-view #message{display:none!important}
 @media(max-width:650px){#message{top:82px!important;right:12px!important;width:calc(100vw - 24px)!important;max-width:calc(100vw - 24px)!important}}
@@ -873,7 +875,7 @@ function renderPasswordRecovery(){
  </form></div>`;
 }
 
-function toast(s,kind){const el=$('#message');if(!el||document.body.classList.contains('login-view'))return;let message=String(s??'').trim();if(!message)return;if(/new row for relation ["']?exams["']? violates check constraint ["']?exams_check/i.test(message))message='เวลาปิดรับคำตอบต้องอยู่หลังเวลาเปิดสอบ กรุณาตรวจสอบวันและเวลาอีกครั้ง';const inferred=kind||( /error|violat|failed|invalid|ไม่สำเร็จ|ไม่ถูกต้อง|กรุณา|ไม่พบ|ต้องระบุ|ต้องอยู่|หมดอายุ/i.test(message)?'error':/สำเร็จ|เรียบร้อย|บันทึกแล้ว|เพิ่มแล้ว|ลบแล้ว|อัปโหลดภาพแล้ว|เปลี่ยนสถานะข้อสอบแล้ว/i.test(message)?'success':'info');const title=inferred==='error'?'แจ้งเตือนข้อผิดพลาด':inferred==='success'?'ดำเนินการสำเร็จ':inferred==='warning'?'โปรดตรวจสอบ':'แจ้งให้ทราบ';el.innerHTML='<span class="notification-icon" aria-hidden="true">'+(inferred==='error'?'!':inferred==='success'?'✓':'i')+'</span><span class="notification-copy"><strong class="notification-title">'+esc(title)+'</strong><span class="notification-text">'+esc(message)+'</span></span>';el.dataset.kind=inferred;el.setAttribute('role',inferred==='error'?'alert':'status');el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.hidden=true;delete el.dataset.kind},3000)}
+function toast(s,kind){const el=$('#message');if(!el||document.body.classList.contains('login-view'))return;let message=String(s??'').trim();if(!message)return;if(/new row for relation ["']?exams["']? violates check constraint ["']?exams_check/i.test(message))message='เวลาปิดรับคำตอบต้องอยู่หลังเวลาเปิดสอบ กรุณาตรวจสอบวันและเวลาอีกครั้ง';const failed=kind==='error'||/error|exception|violat|failed|invalid|ไม่สำเร็จ|ไม่ถูกต้อง|กรุณา|ไม่พบ|ต้องระบุ|ต้องอยู่|หมดอายุ|ผิดพลาด|ค้างในเครื่อง/i.test(message);const inferred=failed?'error':'success';if(failed&&!/^Error:/i.test(message))message='Error: '+message;const title=failed?'ดำเนินการไม่สำเร็จ':'ดำเนินการสำเร็จ';el.innerHTML='<span class="notification-icon" aria-hidden="true">'+(failed?'!':'✓')+'</span><span class="notification-copy"><strong class="notification-title">'+esc(title)+'</strong><span class="notification-text">'+esc(message)+'</span></span>';el.dataset.kind=inferred;el.setAttribute('role',failed?'alert':'status');el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.hidden=true;delete el.dataset.kind},5000)}
 function date(v){return new Date(v).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})}
 function examDateTime(v){if(!v)return '-';const d=new Date(v);if(Number.isNaN(d.getTime()))return '-';const day=d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});const time=d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false});return `${day} เวลา ${time} น.`}
 function localDate(v){const d=new Date(v);return new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
