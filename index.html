@@ -607,6 +607,62 @@ body.teacher-workspace.sidebar-collapsed main{padding-left:292px}
 #export-report-filter .report-controls .report-exam-dropdown>summary::after{content:none!important;display:none!important}
 @media(max-width:760px){#export-report-filter{padding:20px!important}#export-report-filter .report-controls{grid-template-columns:minmax(0,1fr)!important;gap:16px!important}}
 
+
+/* Fix exam picker panel being clipped when the details element opens */
+#cumulative-report-filter .report-controls .report-exam-dropdown[open],
+#export-report-filter .report-controls .report-exam-dropdown[open]{
+  height:auto!important;
+  min-height:56px!important;
+  max-height:none!important;
+  overflow:visible!important;
+  position:relative!important;
+  z-index:30!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown:not([open]),
+#export-report-filter .report-controls .report-exam-dropdown:not([open]){
+  height:56px!important;
+  min-height:56px!important;
+  max-height:56px!important;
+  overflow:hidden!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown[open]>.check-list,
+#export-report-filter .report-controls .report-exam-dropdown[open]>.check-list{
+  display:block!important;
+  position:relative!important;
+  width:100%!important;
+  max-height:260px!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  background:#fff!important;
+  border:1px solid var(--line-2)!important;
+  border-top:0!important;
+  border-radius:0 0 14px 14px!important;
+  box-sizing:border-box!important;
+  z-index:31!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown[open]>summary,
+#export-report-filter .report-controls .report-exam-dropdown[open]>summary{
+  background:#fff!important;
+  border-bottom:1px solid var(--line-2)!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown .check-list label,
+#export-report-filter .report-controls .report-exam-dropdown .check-list label{
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:10px!important;
+  padding:10px 12px!important;
+  cursor:pointer!important;
+}
+#cumulative-report-filter .report-controls .report-exam-dropdown .check-list input[type=checkbox],
+#export-report-filter .report-controls .report-exam-dropdown .check-list input[type=checkbox]{
+  display:inline-block!important;
+  flex:0 0 18px!important;
+  width:18px!important;
+  min-width:18px!important;
+  height:18px!important;
+  margin:2px 0 0!important;
+}
+
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
