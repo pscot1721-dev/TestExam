@@ -324,9 +324,19 @@ body.login-view header{display:none}body.login-view main:has(.login.split){max-w
  .login-form-content{max-width:420px;margin:0 auto}
  .login-title{margin-bottom:10px}
 }
-/* ---------- toast ---------- */
-#message{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);z-index:50;max-width:min(92vw,560px);padding:13px 22px;border-radius:14px;color:#fff;background:#0f274a;box-shadow:0 18px 45px rgba(15,39,74,.3)}
+/* ---------- Unified site-wide notifications (login screen intentionally excluded) ---------- */
+#message{position:fixed;left:50%;bottom:28px;transform:translate(-50%,16px);z-index:1000;width:max-content;max-width:min(92vw,560px);padding:13px 18px 13px 46px;border:1px solid var(--primary-line);border-radius:13px;color:var(--ink);background:#fff;box-shadow:0 12px 36px rgba(20,35,60,.16);font-size:14px;font-weight:650;line-height:1.5;opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease;overflow-wrap:anywhere}
+#message:before{content:"i";position:absolute;left:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:800;color:#fff;background:var(--primary)}
+#message[data-kind="error"]{color:#b42318;border-color:#f3b7b2;background:#fff7f6}
+#message[data-kind="error"]:before{content:"!";background:#dc2626}
+#message[data-kind="success"]{color:#18794e;border-color:#b7e4ca;background:#f3fbf6}
+#message[data-kind="success"]:before{content:"✓";background:#23945f}
+#message[data-kind="warning"]{color:#8a5700;border-color:#f0d39b;background:#fffbef}
+#message[data-kind="warning"]:before{content:"!";background:#d99a27}
+#message:not([hidden]){opacity:1;transform:translate(-50%,0);pointer-events:auto}
 #message[hidden]{display:none}
+body.login-view #message{display:none!important}
+@media(max-width:650px){#message{bottom:16px;width:calc(100vw - 28px);max-width:none}}
 
 /* ---------- responsive ---------- */
 @media(max-width:900px){
@@ -860,7 +870,7 @@ function renderPasswordRecovery(){
  </form></div>`;
 }
 
-function toast(s){const el=$('#message');el.textContent=s;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.hidden=true,6500)}
+function toast(s,kind){const el=$('#message');if(!el||document.body.classList.contains('login-view'))return;const message=String(s??'').trim();if(!message)return;const inferred=kind||( /error|violat|failed|invalid|ไม่สำเร็จ|ไม่ถูกต้อง|กรุณา|ไม่พบ|ต้องระบุ|ต้องอยู่|หมดอายุ/i.test(message)?'error':/สำเร็จ|เรียบร้อย|บันทึกแล้ว|เพิ่มแล้ว|ลบแล้ว|อัปโหลดภาพแล้ว/i.test(message)?'success':'info');el.textContent=message;el.dataset.kind=inferred;el.setAttribute('role',inferred==='error'?'alert':'status');el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.hidden=true;delete el.dataset.kind},5200)}
 function date(v){return new Date(v).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})}
 function examDateTime(v){if(!v)return '-';const d=new Date(v);if(Number.isNaN(d.getTime()))return '-';const day=d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});const time=d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false});return `${day} เวลา ${time} น.`}
 function localDate(v){const d=new Date(v);return new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
@@ -1874,7 +1884,7 @@ async function extraClick(action,id,b){
  else if(action==='exam-status'){const e=exams.find(e=>e.id===id);app.innerHTML=`<button class="secondary" data-action="exams">ย้อนกลับ</button><form id="state-form" class="card" style="margin-top:18px;max-width:680px"><h2 style="margin-top:12px">${esc(e.title)}</h2><input name="id" type="hidden" value="${id}"><label>สถานะ<select name="state">${[['published','เผยแพร่ข้อสอบ'],['closed','ปิดการเผยแพร่ข้อสอบ']].map(([v,l])=>`<option value="${v}" ${(e.state==='closed'?'closed':'published')===v?'selected':''}>${l}</option>`).join('')}</select></label><p class="muted">เผยแพร่ข้อสอบแล้ว นักเรียนจะเห็นข้อสอบเมื่อถึงกำหนดวัน/เวลาปล่อยข้อสอบ หลังหมดเวลารับคำตอบ ข้อสอบยังแสดงอยู่จนกว่าครูจะปิดการเผยแพร่</p><button type="submit">บันทึกสถานะ</button></form>`;}
  else if(action==='start-assigned')adopt(await api('start',{exam_id:id}));
  else return false;return true;
-}function formError(f,error){let box=f.querySelector('.form-error');if(!box){box=document.createElement('div');box.className='form-error';box.setAttribute('role','alert');f.append(box);}box.textContent=error.message;if(f.id!=='login-form')toast(error.message);}
+}function formError(f,error){const message=error?.message||String(error||'เกิดข้อผิดพลาด');if(f.id==='login-form'){let box=f.querySelector('.form-error');if(!box){box=document.createElement('div');box.className='form-error';box.setAttribute('role','alert');f.append(box);}box.textContent=message;return;}const old=f.querySelector('.form-error');if(old)old.remove();toast(message,'error');}
 
 document.addEventListener('change',async e=>{
  const inp=e.target;
