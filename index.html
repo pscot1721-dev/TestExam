@@ -470,6 +470,29 @@ body.teacher-workspace.sidebar-collapsed main{padding-left:292px}
  body.teacher-workspace .dashboard-grid{grid-template-columns:1fr}
 }
 
+/* Individual attempt report: balanced identity and score dashboard */
+.report-detail-card{padding:26px!important;display:grid;gap:20px}
+.report-detail-heading{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,280px);gap:20px;align-items:center}
+.report-detail-heading h1{margin:0;font-size:clamp(20px,2vw,27px);line-height:1.35}
+.report-detail-heading p{margin:6px 0 0}
+.report-score-highlight{min-height:112px;box-sizing:border-box;border:1px solid #cfe2f2;border-radius:16px;background:linear-gradient(135deg,#eef7fd,#f8fbff);padding:16px 20px;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.report-score-highlight small{font-size:12px;color:#60758e;font-weight:650}
+.report-score-highlight strong{font-size:30px;line-height:1.15;color:#244563;font-variant-numeric:tabular-nums}
+.report-score-highlight strong span{font-size:17px;color:#71839a;font-weight:600}
+.report-student-section-title{font-size:17px;margin:0}
+.report-student-info{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.report-student-info>div{min-width:0;min-height:86px;box-sizing:border-box;padding:15px 16px;border:1px solid #e1e8f0;border-radius:13px;background:#fbfcfe;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.report-student-info small{font-size:12px;color:#718198;font-weight:650}
+.report-student-info strong{font-size:15px;color:#26364d;line-height:1.45;overflow-wrap:anywhere}
+.report-attempt-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding-top:16px;border-top:1px solid #e7edf4}
+.report-attempt-meta>span{display:flex;flex-direction:column;gap:6px;color:#718198;font-size:12px}
+.report-attempt-meta strong{font-size:13px;color:#33445c;font-weight:650;line-height:1.4}
+.report-exam-stat-card>.stats.report-stats{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:12px!important}
+.report-exam-stat-card>.stats.report-stats>.card{min-width:0;min-height:104px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;padding:16px!important}
+.report-exam-stat-card>.stats.report-stats>.card small{font-size:12px;line-height:1.4}
+.report-exam-stat-card>.stats.report-stats>.card .stat{font-size:27px;line-height:1.2;font-weight:750}
+@media(max-width:1100px){.report-student-info{grid-template-columns:repeat(2,minmax(0,1fr))}.report-attempt-meta{grid-template-columns:repeat(2,minmax(0,1fr))}.report-exam-stat-card>.stats.report-stats{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(max-width:650px){.report-detail-card{padding:18px!important}.report-detail-heading{grid-template-columns:1fr}.report-student-info{grid-template-columns:1fr 1fr}.report-exam-stat-card>.stats.report-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 /* Cumulative report filter: strict equal sizing and aligned control baselines. */
 #cumulative-report-filter .report-controls{
   display:grid!important;
@@ -1140,20 +1163,19 @@ function renderAttemptReport(a){
  const mcq=questions.filter(q=>q.kind==='mcq');
  const pending=written.filter(q=>q.score===null||q.score===undefined).length;
  const eventRows=timeline(a);
- app.innerHTML=`<button class="secondary" data-action="reports">ย้อนกลับ</button>
+ app.innerHTML=`<button class="secondary" data-action="reports-filter-return">ย้อนกลับ</button>
  <div class="card report-detail-card" style="margin-top:18px">
-  <span class="pill">ตรวจข้อสอบย้อนหลัง</span>
-  <h1 style="margin-top:12px">${esc(a.student_name)} · ${esc(a.student_code)}</h1>
-  <p>${esc(a.title)}</p>
-  <div class="stat">${a.score??0} <small>/ ${a.total_score}</small></div>
+  <div class="report-detail-heading"><div><h1>${esc(a.title||"รายงานผลการสอบ")}</h1><p class="muted">ข้อมูลผลการสอบรายบุคคล</p></div><div class="report-score-highlight"><small>คะแนนที่ได้</small><strong>${esc(a.score??0)} <span>/ ${esc(a.total_score??0)}</span></strong><small>${status} · ใช้เวลา ${used} วินาที</small></div></div>
+  <h2 class="report-student-section-title">ข้อมูลนักเรียน</h2>
+  <div class="report-student-info"><div><small>ชื่อ–นามสกุล</small><strong>${esc(a.student_name||"-")}</strong></div><div><small>ห้องเรียน</small><strong>${esc((a.class_names||[]).join(", ")||a.class_name||"-")}</strong></div><div><small>เลขที่</small><strong>${esc(a.student_number??a.number??"-")}</strong></div><div><small>รหัสนักเรียน</small><strong>${esc(a.student_code||"-")}</strong></div></div>
+  <div class="report-attempt-meta"><span>เริ่มสอบ<strong>${date(a.started_at)}</strong></span><span>กำหนดส่ง<strong>${date(a.deadline)}</strong></span><span>ส่งข้อสอบ<strong>${a.submitted_at?date(a.submitted_at):"ยังไม่ส่ง"}</strong></span><span>อัตนัยรอตรวจ<strong>${pending} ข้อ</strong></span></div>
   <p class="muted">อัตนัยรอตรวจ ${pending} ข้อ · เริ่ม ${date(a.started_at)}<br>ครบกำหนด ${date(a.deadline)}${a.submitted_at?'<br>ส่งเมื่อ '+date(a.submitted_at):''}</p>
-  <p class="muted">ห้อง: ${esc((a.class_names||[]).join(', ')||'-')} · เวลาที่ใช้ ${used} วินาที · ${status}</p>
-  <div class="notice">ครูสามารถตรวจข้อสอบอัตนัยย้อนหลัง ให้คะแนน และเขียนข้อคิดเห็นได้จากหน้านี้ เมื่อตรวจครบแล้ว นักเรียนจะเห็นผลตามเงื่อนไขการประกาศคะแนนของข้อสอบ</div>
+  
  </div>
  ${written.length?`<h2>ตรวจข้อสอบอัตนัย</h2>${written.map(q=>writtenGradingCard(q,a)).join('')}`:''}
  ${mcq.length?`<h2 style="margin-top:24px">ผลการสอบปรนัย</h2>${mcq.map(q=>mcqReviewCard(q)).join('')}`:''}
  ${!written.length&&!mcq.length?'<div class="card empty">ไม่พบข้อคำถามในรายงานนี้</div>':''}
- <div class="card tablewrap"><h2 style="padding:18px 18px 0">เหตุการณ์ระหว่างทำข้อสอบ</h2><p class="muted" style="padding:0 18px">ตารางนี้เรียงตามเวลาที่เกิดขึ้นจริง ไม่แสดงแถว “กลับมา/โฟกัส” แยกต่างหาก แต่ใช้เป็นเวลาสิ้นสุดของเหตุการณ์ก่อนหน้า</p><table><thead><tr><th>เหตุการณ์</th><th>เวลาเริ่ม</th><th>เวลาสิ้นสุด</th><th>เวลาที่ใช้ (วินาที)</th><th>อุปกรณ์ที่ใช้</th></tr></thead><tbody>${eventRows||'<tr><td colspan="5" class="muted">ไม่มีเหตุการณ์ที่บันทึกไว้</td></tr>'}</tbody></table></div>`;
+ <div class="card tablewrap"><h2 style="padding:18px 18px 0">เหตุการณ์ระหว่างทำข้อสอบ</h2><table><thead><tr><th>เหตุการณ์</th><th>เวลาเริ่ม</th><th>เวลาสิ้นสุด</th><th>เวลาที่ใช้ (วินาที)</th><th>อุปกรณ์ที่ใช้</th></tr></thead><tbody>${eventRows||'<tr><td colspan="5" class="muted">ไม่มีเหตุการณ์ที่บันทึกไว้</td></tr>'}</tbody></table></div>`;
 }
 const cacheKey=id=>'te-draft-'+id, eventsKey=id=>'te-events-'+id;
 function syncClock(a){clockBase=new Date(a.server_now).getTime();clockMark=performance.now()}
@@ -1222,7 +1244,7 @@ function assignmentStudentSet(assignments=[],shownStudents=[]){
 }
 function reportStatsCardsForExam(exam,stats,roomName,isAssigned){
  return `<section class="card report-exam-stat-card">
-  <div><h2>${esc(examTitleWithScore(exam))}</h2><p class="muted">ห้องเรียน: ${esc(roomName||'ทุกห้องเรียน')}</p></div>
+  <div><h2>${esc(examTitleWithScore(exam))}</h2></div>
   ${isAssigned?'':`<div class="notice warn">ครูไม่ได้มอบหมายข้อสอบนี้ให้กับนักเรียนห้องนี้</div>`}
   <div class="stats report-stats">
    <div class="card"><small>จำนวนนักเรียน</small><div class="stat">${stats.totalStudents}</div></div>
@@ -1965,7 +1987,8 @@ document.addEventListener('click',async event=>{const b=event.target.closest('[d
  else if(action==='remove-image'){collectBuilder();const i=Number(b.dataset.index),j=b.dataset.option!=null?Number(b.dataset.option):null;if(b.dataset.scope==='question')builder.questions[i].prompt_image='';else if(builder.questions[i].option_images)builder.questions[i].option_images[j]='';renderBuilder();toast('ลบภาพแล้ว')}
  else if(['add-mcq','add-written','remove-question','add-option','remove-option'].includes(action)){syncBuilderDraft();const i=Number(b.dataset.index),j=Number(b.dataset.option);if(action.startsWith('add-')&&['add-mcq','add-written'].includes(action))builder.questions.push(newQuestion(action==='add-mcq'?'mcq':'written'));if(action==='remove-question')builder.questions.splice(i,1);if(action==='add-option'){if(!builder.questions[i])throw Error('ไม่พบข้อคำถามที่จะเพิ่มตัวเลือก');builder.questions[i].options=builder.questions[i].options||[];builder.questions[i].option_images=builder.questions[i].option_images||[];builder.questions[i].options.push('');builder.questions[i].option_images.push('')}if(action==='remove-option'){const q=builder.questions[i];q.options.splice(j,1);q.option_images=(q.option_images||[]);q.option_images.splice(j,1);q.correct_index=q.correct_index===j?0:q.correct_index>j?q.correct_index-1:q.correct_index}const y=window.scrollY;renderBuilder();window.scrollTo(0,y)}
  else if(action==='report')await report(id,window._reportClass||'');
- else if(action==='attempt-report')renderAttemptReport(await api('attempt-report',{attempt_id:id}));
+ else if(action==='attempt-report'){window._returnCumulativeShowReport=!!document.querySelector('#report-results:not([hidden])');renderAttemptReport(await api('attempt-report',{attempt_id:id}));}
+ else if(action==='reports-filter-return'){await reportsHome(window._cumulativeClassFilter||'',window._cumulativeExamIds||[],!!window._returnCumulativeShowReport);}
  else if(action==='student-home')await studentHome();
  else if(action==='resume')adopt(await api('attempt',{attempt_id:id}));
  else if(action==='reload-attempt'){if(confirm('ละทิ้งคำตอบค้างในเครื่อง แล้วใช้คำตอบล่าสุดจากเซิร์ฟเวอร์?'))adopt(await api('attempt',{attempt_id:current.id}),false)}
