@@ -521,6 +521,20 @@ body.teacher-workspace.sidebar-collapsed main{padding-left:292px}
   #cumulative-report-filter .report-filter-actions>button{width:100%!important}
 }
 
+
+/* Balanced report filter controls */
+#cumulative-report-filter{padding:26px 30px!important}
+#cumulative-report-filter .report-controls{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:24px!important;align-items:end!important}
+#cumulative-report-filter .report-controls>div{display:flex!important;flex-direction:column!important;justify-content:flex-end!important;min-width:0!important}
+#cumulative-report-filter .report-controls h3{height:24px!important;min-height:24px!important;line-height:24px!important;margin:0 0 12px!important;padding:0!important;font-size:14px!important;font-weight:700!important}
+#cumulative-report-filter .report-controls select,#cumulative-report-filter .report-controls .report-exam-dropdown{width:100%!important;height:54px!important;min-height:54px!important;max-height:54px!important;margin:0!important;box-sizing:border-box!important}
+#cumulative-report-filter .report-controls select{padding:0 16px!important}
+#cumulative-report-filter .report-exam-dropdown>summary{height:52px!important;min-height:52px!important;padding:0 16px!important;box-sizing:border-box!important}
+#cumulative-report-filter .report-filter-actions{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:12px!important;margin-top:22px!important}
+#cumulative-report-filter .report-filter-actions>button{display:inline-flex!important;flex:0 0 250px!important;width:250px!important;min-width:250px!important;max-width:250px!important;height:48px!important;min-height:48px!important;max-height:48px!important;margin:0!important;padding:0 16px!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;white-space:nowrap!important;font-size:14px!important;line-height:1.2!important}
+#report-results[hidden]{display:none!important}
+@media(max-width:760px){#cumulative-report-filter{padding:20px!important}#cumulative-report-filter .report-controls{grid-template-columns:minmax(0,1fr)!important;gap:16px!important}#cumulative-report-filter .report-filter-actions>button{flex:1 1 100%!important;width:100%!important;min-width:0!important;max-width:none!important}}
+
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
@@ -1003,7 +1017,7 @@ async function teacherHome(tab='dashboard'){
  }
  if(tab==='exams')app.innerHTML+=exams.length?`<div class="grid grid-cards">${exams.map(e=>`<section class="card exam-card"><div class="row between"><span class="pill ${e.state==='closed'?'mute':'ok'}">${stateLabel(e.state)}</span><small>${date(e.opens_at)} – ${date(e.closes_at)}</small></div><h2 style="margin-top:14px">${esc(e.title)}</h2><p class="muted">${esc([e.subject,e.course].filter(Boolean).join(' · '))}<br>${e.duration_minutes} นาที · ${e.total_score} คะแนน<br>ทำซ้ำ: ${e.allow_retake?'ได้ '+Number(e.retake_limit||1)+' ครั้ง':'ไม่อนุญาต'}</p><div class="row"><button class="secondary" data-action="edit-exam" data-id="${e.id}">แก้ไขข้อสอบ</button><button class="secondary" data-action="exam-status" data-id="${e.id}">เปลี่ยนสถานะ</button><button class="danger" data-action="delete-exam" data-id="${e.id}">ลบข้อสอบ</button></div></section>`).join('')}</div>`:'<div class="card empty">ยังไม่มีข้อสอบ กดสร้างข้อสอบเพื่อเริ่มต้น</div>';
  app.innerHTML+='</div>';
-}async function reportsHome(classId=window._cumulativeClassFilter||'',selectedIds=window._cumulativeExamIds||null){
+}async function reportsHome(classId=window._cumulativeClassFilter||'',selectedIds=window._cumulativeExamIds||null,showReport=false){
  current=null;
  const activeClasses=sortClasses(classes.filter(c=>!c.archived));
  if(!classId&&activeClasses[0])classId=activeClasses[0].id;
@@ -1018,10 +1032,10 @@ async function teacherHome(tab='dashboard'){
   .map(s=>({...s,room:studentRoom(s,classId)}))
   .sort((a,b)=>(Number(a.room.student_number)||9999)-(Number(b.room.student_number)||9999)||String(a.student_code).localeCompare(String(b.student_code),'th'));
 
- const [reportLists,examDetails]=await Promise.all([
+ const [reportLists,examDetails]=showReport?await Promise.all([
   Promise.all(selectedExams.map(e=>api('report',{exam_id:e.id,...(classId?{class_id:classId}:{})}).then(rows=>({exam:e,rows})))),
   Promise.all(selectedExams.map(e=>api('exam-get',{exam_id:e.id}).catch(()=>e)))
- ]);
+ ]):[[],[]];
 
  const byStudent={};
  for(const pack of reportLists){
@@ -1036,9 +1050,10 @@ async function teacherHome(tab='dashboard'){
  const roomName=classId?(activeClasses.find(c=>c.id===classId)?.name||'ห้องเรียนที่เลือก'):'ทุกห้องเรียน';
  const statsPanel=reportStatsPanel(rows,selectedExams,examDetails,shownStudents,roomName,classId);
 
- app.innerHTML=`${nav('reports')}<div class="teacher-main"><div class="page-head"><div><h1 class="page-title"><span class="page-title-icon" aria-hidden="true">${uiIcon('chart-column-increasing')}</span>รายงานคะแนนรายแบบทดสอบ</h1></div></div><form id="cumulative-report-filter" class="card"><div class="report-controls"><div><label>ห้องเรียน<select name="class_id"><option value="">ทุกห้องเรียน</option>${activeClasses.map(c=>`<option value="${c.id}" ${c.id===classId?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label></div><div><h3>แบบทดสอบ</h3><details class="report-exam-dropdown"><summary>เลือกแบบทดสอบ</summary><div class="check-list">${ordered.map(e=>`<label><input type="checkbox" name="exam_ids" value="${e.id}" ${selected.includes(e.id)?'checked':''}> ${esc(examTitleWithScore(e))} <small>${esc([e.subject,e.course].filter(Boolean).join(' · '))}</small></label>`).join('')||'<p class="muted">ยังไม่มีข้อสอบ</p>'}</div></details></div></div><div class="report-filter-actions"><button type="submit">แสดงรายงานตามตัวกรอง</button><button type="button" data-action="export-report-options">ส่งออกผลคะแนนเป็น Excel</button></div></form>
+ app.innerHTML=`${nav('reports')}<div class="teacher-main"><div class="page-head"><div><h1 class="page-title"><span class="page-title-icon" aria-hidden="true">${uiIcon('chart-column-increasing')}</span>รายงานคะแนนรายแบบทดสอบ</h1></div></div><form id="cumulative-report-filter" class="card"><div class="report-controls"><div><h3>ห้องเรียน</h3><select name="class_id"><option value="">ทุกห้องเรียน</option>${activeClasses.map(c=>`<option value="${c.id}" ${c.id===classId?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div><div><h3>แบบทดสอบ</h3><details class="report-exam-dropdown"><summary>เลือกแบบทดสอบ</summary><div class="check-list">${ordered.map(e=>`<label><input type="checkbox" name="exam_ids" value="${e.id}" ${selected.includes(e.id)?'checked':''}> ${esc(examTitleWithScore(e))} <small>${esc([e.subject,e.course].filter(Boolean).join(' · '))}</small></label>`).join('')||'<p class="muted">ยังไม่มีข้อสอบ</p>'}</div></details></div></div><div class="report-filter-actions"><button type="submit">แสดงรายงานตามตัวกรอง</button><button type="button" data-action="export-report-options">ส่งออกผลคะแนนเป็น Excel</button></div></form>
+ <div id="report-results" ${showReport?'':'hidden'}>
  ${statsPanel||'<div class="card empty">กรุณาเลือกแบบทดสอบเพื่อดูรายงาน</div>'}
- <div class="card tablewrap"><table class="report-wide"><thead><tr><th rowspan="2">เลขที่</th><th rowspan="2">รหัสนักเรียน</th><th rowspan="2">ชื่อ–นามสกุล</th><th rowspan="2">ห้องเรียน</th>${selectedExams.map(e=>`<th colspan="3">${esc(examTitleWithScore(e))}</th>`).join('')}</tr><tr>${selectedExams.map(e=>`<th>คะแนนที่ได้</th><th>%</th><th>ตรวจ/รายงาน</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.student.room.student_number||'-')}</td><td>${esc(r.student.student_code)}</td><td>${esc(r.student.name)}</td><td>${esc(sortClasses(r.student.classes||[]).map(c=>c.name).join(', '))}</td>${r.scores.map((x,idx)=>{const total=Number(selectedExams[idx]?.total_score||0);const pct=x&&x.status==='submitted'&&total?Math.round(Number(x.score||0)/total*10000)/100:'';return `<td>${x&&x.status==='submitted'?`<span class="score-ok">${esc(x.score)}</span>`:x?'<span class="score-miss">กำลังทำ</span>':'<span class="score-miss">-</span>'}</td><td>${pct===''?'-':pct+'%'}</td><td>${x?.id?`<button class="secondary small-btn" data-action="attempt-report" data-id="${x.id}">ตรวจ/ดูรายงาน</button>`:'-'}</td>`}).join('')}</tr>`).join('')}</tbody></table>${rows.length?'':'<div class="empty">ไม่พบนักเรียนในเงื่อนไขนี้</div>'}</div>`;
+ <div class="card tablewrap"><table class="report-wide"><thead><tr><th rowspan="2">เลขที่</th><th rowspan="2">รหัสนักเรียน</th><th rowspan="2">ชื่อ–นามสกุล</th><th rowspan="2">ห้องเรียน</th>${selectedExams.map(e=>`<th colspan="3">${esc(examTitleWithScore(e))}</th>`).join('')}</tr><tr>${selectedExams.map(e=>`<th>คะแนนที่ได้</th><th>%</th><th>ตรวจ/รายงาน</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.student.room.student_number||'-')}</td><td>${esc(r.student.student_code)}</td><td>${esc(r.student.name)}</td><td>${esc(sortClasses(r.student.classes||[]).map(c=>c.name).join(', '))}</td>${r.scores.map((x,idx)=>{const total=Number(selectedExams[idx]?.total_score||0);const pct=x&&x.status==='submitted'&&total?Math.round(Number(x.score||0)/total*10000)/100:'';return `<td>${x&&x.status==='submitted'?`<span class="score-ok">${esc(x.score)}</span>`:x?'<span class="score-miss">กำลังทำ</span>':'<span class="score-miss">-</span>'}</td><td>${pct===''?'-':pct+'%'}</td><td>${x?.id?`<button class="secondary small-btn" data-action="attempt-report" data-id="${x.id}">ตรวจ/ดูรายงาน</button>`:'-'}</td>`}).join('')}</tr>`).join('')}</tbody></table>${rows.length?'':'<div class="empty">ไม่พบนักเรียนในเงื่อนไขนี้</div>'}</div></div>`;
  app.innerHTML+='</div>';}
 function studentForm(s={}){
  const selected=window._studentClassFilter||s.classes?.[0]?.id||'';
@@ -1514,7 +1529,7 @@ async function extraSubmit(f,d){const id=f.getAttribute('id');
  else if(id==='staff-form'){delete d.contact;const data={...d,active:d.id?new FormData(f).has('active'):true};if(!d.id)delete data.id;await api(d.id?'admin-save':'admin-create',data);await adminHome();toast('บันทึกครูแล้ว');}
  else if(id==='staff-password'){await api('admin-password',d);await adminHome();toast('รีเซ็ตรหัสผ่านครูแล้ว');}
  else if(id==='state-form'){await api('exam-state',{id:d.id,state:d.state});await teacherHome('exams');toast('เปลี่ยนสถานะข้อสอบแล้ว');}
- else if(id==='cumulative-report-filter'){const fd=new FormData(f);await reportsHome(d.class_id||'',fd.getAll('exam_ids'));}
+ else if(id==='cumulative-report-filter'){const fd=new FormData(f);await reportsHome(d.class_id||'',fd.getAll('exam_ids'),true);}
  else if(id==='export-report-filter'){const fd=new FormData(f);await exportCumulativeReportExcel(d.class_id||'',fd.getAll('exam_ids'));}
  else return false;return true;
 }
